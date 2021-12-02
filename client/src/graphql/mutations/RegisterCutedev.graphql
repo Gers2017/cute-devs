@@ -1,0 +1,14 @@
+mutation RegisterCutedev($password: String!, $username: String!) {
+  registerCuteDev(password: $password, username: $username) {
+    cuteDev {
+      id
+      username
+      createdAt
+      updatedAt
+    }
+    errors {
+      field
+      message
+    }
+  }
+}

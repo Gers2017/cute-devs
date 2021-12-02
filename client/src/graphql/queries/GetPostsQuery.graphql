@@ -1,0 +1,13 @@
+query GetPosts($input: PostsInput!) {
+  posts(input: $input) {
+    id
+    text
+    stars
+    date
+    creator {
+      id
+      username
+      imageUrl
+    }
+  }
+}

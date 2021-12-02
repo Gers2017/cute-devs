@@ -1,0 +1,10 @@
+query GetCuteDevProfile($cuteDevId: String!) {
+  cuteDev(id: $cuteDevId) {
+    id
+    username
+    bio
+    imageUrl
+    languages
+    projects
+  }
+}

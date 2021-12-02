@@ -1,0 +1,12 @@
+mutation LoginCutedev($password: String!, $username: String!) {
+  login(password: $password, username: $username) {
+    cuteDev {
+      id
+      username
+    }
+    errors {
+      field
+      message
+    }
+  }
+}

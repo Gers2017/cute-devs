@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-gray-900 text-gray-50 text-base;
+  font-family: Poppins;
+}
+
+image {
+  max-width: 100%;
+  display: inline-block;
+  height: auto;
+}

@@ -1,0 +1,8 @@
+query GetCuteDevPosts($input: PostsInput!) {
+  posts(input: $input) {
+    id
+    stars
+    text
+    date
+  }
+}
