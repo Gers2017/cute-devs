@@ -32,10 +32,8 @@ Please send a Pull Request with a clear list of the changes made using clear and
 - Every component file should export (default) a single component
 - Destructure your props
 - Your Imports should be in the following order:
-  - React import
-  - Library imports
-  - Hook imports
-  - Helpers imports
+  - Third party packages imports `(React, Urql, etc...)`
+  - Lib/utils/hooks imports `(useWindowsSize, useLogin, etc...)`
 - Avoid the use of `Object.assign()` in favor of
   the spread operator `({...anotherObj})`
 - Prefer the .map, .filter, .reduce, etc functions over for loops
