@@ -1,7 +1,6 @@
 /.idea
 /.vscode
-/.idea
-/*/ormconfig.json
+/server/ormconfig.js
 /*/*.dev.*
 
 # Logs

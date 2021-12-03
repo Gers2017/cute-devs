@@ -11,7 +11,7 @@ export class CuteDevResolver {
   @Query(() => Boolean)
   async me(@Ctx() { req }: MyContext) {
     let payload = getJidPayload(req.cookies.jid);
-    return payload ? true : false;
+    return !!payload;
   }
 
   @Query(() => CuteDev, { nullable: true })
@@ -30,7 +30,7 @@ export class CuteDevResolver {
   @Query((returns) => [CuteDev])
   async cuteDevs(
     @Arg("limit", { defaultValue: 5 })
-    limit: number,
+      limit: number,
   ) {
     if (limit < 0) return [];
     return await CuteDev.find({
@@ -121,6 +121,7 @@ export class CuteDevResolver {
       cuteDev,
     };
   }
+
   // TODO: add authentication
   @Mutation(() => CuteDev, { nullable: true })
   async editCuteDev(@Arg("input") { id, editInput }: EditCuteDevInput) {
