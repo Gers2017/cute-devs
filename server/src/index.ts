@@ -1,12 +1,14 @@
 import "reflect-metadata";
 import { config } from "dotenv";
+
 config();
-import { PORT, __is_prod__ } from "./constants";
+import { PORT } from "./constants";
 import { ApolloServer } from "apollo-server-express";
 import express from "express";
 import { MyContext } from "./types/MyContext";
 import cookieParser from "cookie-parser";
-// typeorm and typegraphql
+
+// typeorm and typegraphql config
 import { createConnection } from "typeorm";
 import { buildSchema } from "type-graphql";
 import { CuteDevResolver, PostResolver } from "./schema/resolvers/";
@@ -45,15 +47,3 @@ async function startApolloServer() {
 }
 
 startApolloServer().catch((e) => console.error(e));
-
-// TODO: add path aliases
-/*
---aliases
-
-"baseUrl": "./src"
-  },
-  "paths": {
-    "@entities/*": ["schema/entities/*"],
-    "@resolvers/*": ["schema/resolvers/*"]
-  },
-*/
