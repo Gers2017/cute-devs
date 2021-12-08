@@ -1,8 +1,9 @@
 import { useGetCuteDevProfileQuery } from "@generated";
-import { Link, RouteComponentProps } from "react-router-dom";
+import { RouteComponentProps } from "react-router-dom";
 import Button from "@modules/button";
 import CuteDevPosts from "@modules/cutedevs/CuteDevPosts";
-interface CuteDevPageProps extends RouteComponentProps<{ id: string }> {}
+import { useLogin } from "@context/loginContext";
+interface CuteDevPageProps extends RouteComponentProps<{ id: string }> { }
 
 const Loading = () => (
   <p>
@@ -16,22 +17,21 @@ const Error = () => (
 );
 
 export default function CuteDevPage({ match }: CuteDevPageProps) {
-  let hasErrors = false;
-  let isLoading = false;
+
+  const { userId, isLogin } = useLogin();
+
   const { id } = match.params;
   const [profileResult, _] = useGetCuteDevProfileQuery({
     variables: { cuteDevId: id },
   });
 
-  if (profileResult.fetching) isLoading = true;
-  if (profileResult.error) hasErrors = true;
-
-  if (isLoading) return <Loading />;
-  if (hasErrors) return <Error />;
+  if (profileResult.fetching) return <Loading />;
+  if (profileResult.error) return <Error />;
 
   if (!profileResult.data?.cuteDev) return <Error />;
   const { cuteDev } = profileResult.data;
   const { username, imageUrl, bio, languages, projects } = cuteDev;
+
   return (
     <div className="grid py-4 lg:grid-cols-4 grid-cols-1">
       <section className="col-span-1 flex flex-col items-center py-2 px-8 gap-4 border-r border-gray-700 font-normal">
@@ -70,7 +70,7 @@ export default function CuteDevPage({ match }: CuteDevPageProps) {
               )}
             </section>
           </details>
-          <Button full>Edit profile</Button>
+          {(isLogin && userId === id) && (<Button full>Edit profile</Button>)}
         </div>
       </section>
       <CuteDevPosts cuteDev={cuteDev} />

@@ -1,17 +1,41 @@
 import { CuteDev } from "../../entities/CuteDev";
-import { CuteDevResponse, DeleteResponse } from "../responses";
+import { AuthReponse, CuteDevResponse, DeleteResponse } from "../responses";
 import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
 import { MyContext } from "src/types/MyContext";
 import { hash, compare } from "bcrypt";
-import { setJidCookie, getJidPayload } from "../../../functions/jidToken";
+import {
+  setJidCookie,
+  setRefreshToken,
+  tryToGetTokens,
+  clearTokens,
+} from "../../../functions/token";
 import { EditCuteDevInput } from "./CuteDevInput";
 
 @Resolver(CuteDev)
 export class CuteDevResolver {
-  @Query(() => Boolean)
-  async me(@Ctx() { req }: MyContext) {
-    let payload = getJidPayload(req.cookies.jid);
-    return !!payload;
+  @Query(() => AuthReponse)
+  async me(@Ctx() { req, res }: MyContext): Promise<AuthReponse> {
+    let userId = "";
+
+    const { jidPayload, refreshPayload } = tryToGetTokens(req, res);
+
+    if (refreshPayload) userId = refreshPayload.userId;
+    if (jidPayload) userId = jidPayload.userId;
+
+    return {
+      isAuth: !!jidPayload || !!refreshPayload,
+      userId,
+    };
+  }
+
+  @Mutation(() => Boolean)
+  async logout(@Ctx() { req, res }: MyContext) {
+    const { jidPayload, refreshPayload } = tryToGetTokens(req, res);
+    if (jidPayload || refreshPayload) {
+      clearTokens(res);
+      return true;
+    }
+    return false;
   }
 
   @Query(() => CuteDev, { nullable: true })
@@ -30,7 +54,7 @@ export class CuteDevResolver {
   @Query((returns) => [CuteDev])
   async cuteDevs(
     @Arg("limit", { defaultValue: 5 })
-      limit: number,
+    limit: number,
   ) {
     if (limit < 0) return [];
     return await CuteDev.find({
@@ -76,6 +100,7 @@ export class CuteDevResolver {
       const userId = identifiers[0].id;
 
       setJidCookie(res, { userId });
+      setRefreshToken(res, { userId, sessionId: 1 });
 
       return {
         cuteDev: newCuteDev,
@@ -117,6 +142,11 @@ export class CuteDevResolver {
       };
     }
     setJidCookie(res, { userId: cuteDev.id });
+    setRefreshToken(res, {
+      userId: cuteDev.id,
+      sessionId: 1,
+    });
+
     return {
       cuteDev,
     };

@@ -1,24 +1,22 @@
-import React, { useState, ChangeEvent } from "react";
+import { useState } from "react";
 
 export default function useForm<T extends object>(initialState: T) {
-  const [formState, setFormState] = useState(initialState);
+  const [formState, _setFormState] = useState(initialState);
 
-  function setFormValue(key: keyof T, value: T[keyof T]) {
-    setFormState((state) => ({ ...state, [key]: value }));
+  type K = keyof T;
+  type V = T[keyof T];
+
+  function formSetter(key: K, value: V) {
+    _setFormState((state) => ({ ...state, [key]: value }));
   }
 
-  function onInputChange(
-    e: ChangeEvent<HTMLInputElement>,
-    shaper: (value: string) => T[keyof T],
-  ) {
-    const key = e.target.name as keyof T;
-    const value = e.target.value;
-    setFormValue(key, shaper(value));
+  function setFormValue(key: K, value: V) {
+    formSetter(key, value);
   }
 
   function clearForm() {
-    setFormState((state) => initialState);
+    _setFormState((state) => initialState);
   }
 
-  return { formState, setFormState, setFormValue, onInputChange, clearForm };
+  return { formState, _setFormState, setFormValue, clearForm };
 }

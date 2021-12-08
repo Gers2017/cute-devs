@@ -2,6 +2,8 @@ import React, { FormHTMLAttributes } from "react";
 interface FormProps extends FormHTMLAttributes<HTMLFormElement> {
   children?: React.ReactNode;
 }
+
+// TODO: make this useful, to sync Register and Login forms
 export default function Form({ children, ...rest }: FormProps) {
   return (
     <form

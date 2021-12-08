@@ -4,7 +4,7 @@ import { Post } from "../../entities/Post";
 import { CreatePostInput, PostsInput } from "./PostInput";
 import { DeleteResponse, StarPostResponse } from "../responses";
 import { MyContext } from "src/types/MyContext";
-import { getJidPayload } from "../../../functions/jidToken";
+import { getJidPayload } from "../../../functions/token";
 
 @Resolver(Post)
 export class PostResolver {

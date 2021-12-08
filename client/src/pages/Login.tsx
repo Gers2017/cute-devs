@@ -1,79 +1,73 @@
 import React from "react";
 import { useLoginCutedevMutation } from "@generated";
+import { useLogin } from "@context/loginContext";
 import { Redirect } from "react-router-dom";
 import useForm from "@hooks/useForm";
 import LoginIcon from "@icons/login";
 import Button from "@modules/button";
-import Form from "@modules/form/Form";
 import Input from "@modules/form/Input";
 import FormField from "@modules/form/FormField";
-import { useLogin } from "@context/loginContext";
 
 export default function Login() {
-  const [_, loginCutedev] = useLoginCutedevMutation();
-  const { isLogged, setIsLogged } = useLogin();
-
-  const { formState, onInputChange, clearForm } = useForm({
+  const [_loginState, loginMutation] = useLoginCutedevMutation();
+  const { isLogin, login } = useLogin()
+  const { formState, setFormValue, clearForm } = useForm({
     username: "",
     password: "",
   });
 
-  if (isLogged) return <Redirect to="/" />;
-
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const { username, password } = formState;
-    try {
-      const { data, error } = await loginCutedev({ username, password });
-      if (error) throw error;
-
-      if (data && data.login) {
-        const { errors, cuteDev } = data.login;
-        errors && console.table(errors);
-        if (cuteDev) {
-          setIsLogged(true);
-          console.dir({
-            id: cuteDev.id,
-            username: cuteDev.username,
-          });
+    await loginMutation({ ...formState })
+      .then(({ data, error }) => {
+        if (error) console.error(error);
+        if (data && data.login.cuteDev) {
+          login();
         }
-      }
-    } catch (e) {
-      console.error(e);
-    }
+      }).catch(e => console.error(e))
     clearForm();
   }
 
-  return (
-    <div className="mx-auto my-8 w-max">
-      <h2 className="text-2xl mb-4">Login</h2>
-      <Form onSubmit={onSubmit}>
-        <FormField>
-          <label className="mb-2" htmlFor="username">
-            Username
-          </label>
-          <Input
-            type="text"
-            name="username"
-            onChange={(e) => onInputChange(e, (value) => value)}
-          />
-        </FormField>
-        <FormField>
-          <label className="mb-2" htmlFor="password">
-            Password
-          </label>
-          <Input
-            type="password"
-            name="password"
-            onChange={(e) => onInputChange(e, (value) => value)}
-          />
-        </FormField>
+  if (isLogin) return <Redirect to="/" />;
 
-        <Button primary full type="submit">
-          <LoginIcon />
-          <p>Login</p>
-        </Button>
-      </Form>
+
+  return (
+    <div className="my-4 flex justify-center">
+      <section className={"max-w-lg w-full"}>
+        <h2 className="text-4xl my-4 text-center">Login</h2>
+
+        <form className="w-full flex flex-col items-start gap-4 shadow-2xl min-w-lg py-8 px-6 border
+        border-gray-600" onSubmit={handleSubmit}>
+          <FormField fullwidth>
+            <label className="mb-2" htmlFor="username">
+              Username
+            </label>
+            <Input
+              type="text"
+              name="username"
+              value={formState.username}
+              onChange={(e) => setFormValue("username", e.target.value)}
+            />
+          </FormField>
+          <FormField fullwidth>
+            <label className="mb-2" htmlFor="password">
+              Password
+            </label>
+            <Input
+              type="password"
+              name="password"
+              value={formState.password}
+              onChange={(e) => setFormValue("password", e.target.value)}
+            />
+          </FormField>
+
+          <Button primary full type="submit">
+            <LoginIcon />
+            <p>Login</p>
+          </Button>
+
+        </form>
+      </section>
     </div>
   );
 }

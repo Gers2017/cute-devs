@@ -1,11 +1,11 @@
 import React, { InputHTMLAttributes } from "react";
 
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {}
+interface InputProps extends InputHTMLAttributes<HTMLInputElement> { }
 
 export default function Input({ ...props }: InputProps) {
   return (
     <input
-      className="w-full bg-gray-800 p-2 text-gray-50 text-sm font-semibold"
+      className="w-full bg-gray-900 p-2 text-gray-50 text-sm font-semibold rounded border border-gray-50"
       {...props}
     />
   );
