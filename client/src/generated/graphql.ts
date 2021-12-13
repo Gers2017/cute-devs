@@ -45,6 +45,10 @@ export type CuteDevResponse = {
   errors?: Maybe<Array<FieldError>>;
 };
 
+export type CuteDevsInput = {
+  limit?: Maybe<Scalars['Int']>;
+};
+
 export type DeleteResponse = {
   __typename?: 'DeleteResponse';
   deleted: Scalars['Boolean'];
@@ -156,7 +160,7 @@ export type QueryCuteDevArgs = {
 
 
 export type QueryCuteDevsArgs = {
-  limit?: Maybe<Scalars['Float']>;
+  input: CuteDevsInput;
 };
 
 
@@ -242,13 +246,6 @@ export type GetPostsQueryVariables = Exact<{
 
 
 export type GetPostsQuery = { __typename?: 'Query', posts: Array<{ __typename?: 'Post', id: string, text: string, stars: number, date: string, creator: { __typename?: 'CuteDev', id: string, username: string, imageUrl: string } }> };
-
-export type GetSessionInfoQueryVariables = Exact<{
-  cuteDevId: Scalars['String'];
-}>;
-
-
-export type GetSessionInfoQuery = { __typename?: 'Query', cuteDev?: { __typename?: 'CuteDev', username: string, imageUrl: string } | null | undefined };
 
 
 export const EditCuteDevDocument = gql`
@@ -400,16 +397,4 @@ export const GetPostsDocument = gql`
 
 export function useGetPostsQuery(options: Omit<Urql.UseQueryArgs<GetPostsQueryVariables>, 'query'> = {}) {
   return Urql.useQuery<GetPostsQuery>({ query: GetPostsDocument, ...options });
-};
-export const GetSessionInfoDocument = gql`
-    query getSessionInfo($cuteDevId: String!) {
-  cuteDev(id: $cuteDevId) {
-    username
-    imageUrl
-  }
-}
-    `;
-
-export function useGetSessionInfoQuery(options: Omit<Urql.UseQueryArgs<GetSessionInfoQueryVariables>, 'query'> = {}) {
-  return Urql.useQuery<GetSessionInfoQuery>({ query: GetSessionInfoDocument, ...options });
 };

@@ -87,6 +87,7 @@ function setCookie(
     });
     return true;
   } catch (e) {
+    console.log("<<<< error from setCookie >>>>");
     console.error(e);
     return false;
   }

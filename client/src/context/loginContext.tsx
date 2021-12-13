@@ -1,6 +1,5 @@
-// import { useLocalStorage } from "@hooks/useLocalStorage";
 import { useAuthQuery, useLogoutMutation } from "@generated";
-import React, { createContext, ReactNode, useContext, useState } from "react";
+import React, { createContext, ReactNode, useContext } from "react";
 
 interface LoginState {
   isLogin: boolean;
@@ -19,21 +18,21 @@ const LoginContext = createContext<LoginState>({
 export const useLogin = () => useContext(LoginContext);
 
 export default function LoginProvider({ children }: { children: ReactNode }) {
-  const [authresult, _reexecute] = useAuthQuery({ requestPolicy: "cache-and-network" });
-  const [_logoutState, logoutMutation] = useLogoutMutation()
+  const [authresult, _reexecute] = useAuthQuery({ requestPolicy: "network-only" });
+  const [_logoutState, logoutMutation] = useLogoutMutation();
 
   const { data } = authresult;
 
   let _userId = data?.me ? data.me.userId : "";
   let _isLogin = Boolean(data?.me.isAuth);
 
-  const login = () => {
-    if (data?.me.isAuth) return;
+  function login() {
+    if (!data?.me.isAuth) return;
     _reexecute();
   }
 
-  const logout = () => {
-    if (!data?.me.isAuth) return;
+  function logout() {
+    if (data?.me.isAuth) return;
     logoutMutation()
   }
 

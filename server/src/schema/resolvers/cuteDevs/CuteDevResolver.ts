@@ -9,33 +9,44 @@ import {
   tryToGetTokens,
   clearTokens,
 } from "../../../functions/token";
-import { EditCuteDevInput } from "./CuteDevInput";
+import { CuteDevsInput, EditCuteDevInput } from "./CuteDevInput";
 
 @Resolver(CuteDev)
 export class CuteDevResolver {
   @Query(() => AuthReponse)
   async me(@Ctx() { req, res }: MyContext): Promise<AuthReponse> {
-    let userId = "";
+    try {
+      const { jidPayload, refreshPayload } = tryToGetTokens(req, res);
 
-    const { jidPayload, refreshPayload } = tryToGetTokens(req, res);
+      let userId = "";
 
-    if (refreshPayload) userId = refreshPayload.userId;
-    if (jidPayload) userId = jidPayload.userId;
+      if (jidPayload) userId = jidPayload.userId;
+      else if (refreshPayload) userId = refreshPayload.userId;
 
-    return {
-      isAuth: !!jidPayload || !!refreshPayload,
-      userId,
-    };
+      return {
+        isAuth: !!jidPayload || !!refreshPayload,
+        userId: userId,
+      };
+    } catch (e) {
+      return {
+        isAuth: false,
+        userId: "",
+      };
+    }
   }
 
   @Mutation(() => Boolean)
   async logout(@Ctx() { req, res }: MyContext) {
-    const { jidPayload, refreshPayload } = tryToGetTokens(req, res);
-    if (jidPayload || refreshPayload) {
-      clearTokens(res);
-      return true;
+    try {
+      const { jidPayload, refreshPayload } = tryToGetTokens(req, res);
+      if (jidPayload || refreshPayload) {
+        clearTokens(res);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
     }
-    return false;
   }
 
   @Query(() => CuteDev, { nullable: true })
@@ -52,15 +63,16 @@ export class CuteDevResolver {
   }
 
   @Query((returns) => [CuteDev])
-  async cuteDevs(
-    @Arg("limit", { defaultValue: 5 })
-    limit: number,
-  ) {
-    if (limit < 0) return [];
-    return await CuteDev.find({
-      take: limit,
-      relations: ["posts"],
-    });
+  async cuteDevs(@Arg("input") { limit }: CuteDevsInput) {
+    try {
+      if (limit < 0) return [];
+      return await CuteDev.find({
+        take: limit,
+        relations: ["posts"],
+      });
+    } catch (e) {
+      return [];
+    }
   }
 
   @Mutation((returns) => CuteDevResponse)

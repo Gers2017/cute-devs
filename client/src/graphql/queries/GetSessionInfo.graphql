@@ -1,6 +1,0 @@
-query getSessionInfo($cuteDevId: String!) {
-  cuteDev(id: $cuteDevId) {
-    username
-    imageUrl
-  }
-}

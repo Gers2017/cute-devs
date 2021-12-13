@@ -9,6 +9,7 @@ import Register from "@pages/Register";
 import Urql from "@pages/Urql";
 import LoginProvider from "./context/loginContext";
 import { createClient, Provider } from "urql";
+import Reduxer from "@pages/Reduxer";
 
 const urqlClient = createClient({
   url: (import.meta.env.VITE_SERVER_URL) as string | undefined || "http://localhost:4000/graphql",
@@ -25,6 +26,7 @@ function App() {
         <BrowserRouter>
           <Navbar />
           <Switch>
+            <Route exact path="/reducer" component={Reduxer} />
             <Route exact path="/me" component={Urql} />
             <Route exact path="/" component={Home} />
             <Route exact path="/user/login" component={Login} />

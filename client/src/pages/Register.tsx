@@ -1,73 +1,89 @@
 import React from "react";
-import useForm from "@hooks/useForm";
+import { useFormReducer } from "@hooks/useFormReducer"
 import { useLogin } from "@context/loginContext";
 import { Redirect } from "react-router-dom";
 import { useRegisterCutedevMutation } from "@generated";
 import LoginIcon from "@icons/login";
 import Button from "@modules/button";
-import Input from "@modules/form/Input";
-import FormField from "@modules/form/FormField";
+import Input from "@modules/form/input";
+import Form from "@modules/form";
+import Fieldset from "@modules/form/fieldset";
+import Action from "@modules/layout/Action";
+import { usernameValidator, passwordValidator, bioValidator, MAX_USERNAME_LENGTH, MIN_USERNAME_LENGTH, MIN_PASSWORD_LENGTH, MAX_PASSWORD_LENGTH, MIN_BIO_LENGTH, MAX_BIO_LENGTH } from "@utils/validators"
+import Switch from "@modules/form/switch";
+interface RegisterFields {
+  username: string;
+  password: string;
+  bio: string;
+}
 
 export default function Register() {
-  const [_registerState, registerMutation] = useRegisterCutedevMutation();
   const { isLogin, login } = useLogin()
-  const { formState, setFormValue, clearForm } = useForm({
-    username: "",
-    password: "",
-  });
+  const [_registerState, registerMutation] = useRegisterCutedevMutation();
+
+  const { formState, handleInputChange, handleInputBlur, resetForm } = useFormReducer<RegisterFields>({
+    username: {
+      value: "",
+      errors: [],
+      validator: usernameValidator
+    },
+    password: {
+      value: "",
+      errors: [],
+      validator: passwordValidator
+    },
+    bio: {
+      value: "",
+      errors: [],
+      validator: bioValidator
+    }
+  })
+
+  const { formFields: { username, bio, password }, hasErrors } = formState;
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    await registerMutation({ ...formState })
-      .then(({ data, error }) => {
-        if (error) console.error(error);
-        if (data && data.registerCuteDev.cuteDev) {
-          console.log(data.registerCuteDev.cuteDev, "log from register result");
-          login();
-        }
-      }).catch(e => console.error(e))
-    clearForm();
-  }
+    try {
+      const { data } = await registerMutation({ username: username.value, password: password.value });
+      data && data.registerCuteDev && login();
+    } catch (e) {
+      console.error(e);
+    }
 
+    resetForm();
+  }
 
   if (isLogin) return <Redirect to="/" />
 
   return (
-    <div className="my-4 flex justify-center">
-      <section className={"max-w-lg w-full"}>
-        <h2 className="text-4xl my-4 text-center">Register</h2>
-        <form
-          className="flex flex-col items-start gap-4 shadow-2xl min-w-lg py-8 px-6 border 
-      border-gray-600"
-          onSubmit={handleSubmit}
-        >
-          <FormField fullwidth>
-            <label className="mb-2" htmlFor="username">
-              Username
-            </label>
-            <Input
-              type="text"
-              name="username"
-              onChange={(e) => setFormValue("username", e.target.value)}
-            />
-          </FormField>
-          <FormField fullwidth>
-            <label className="mb-2" htmlFor="password">
-              Password
-            </label>
-            <Input
-              type="password"
-              name="password"
-              onChange={(e) => setFormValue("password", e.target.value)}
-            />
-          </FormField>
+    <div className="mt-28 flex justify-center">
+      <Form onSubmit={handleSubmit}>
 
-          <Button primary full type="submit">
-            <LoginIcon />
-            <p>Register</p>
-          </Button>
-        </form>
-      </section>
+        <h2 className="text-3xl font-bold self-center">Register</h2>
+
+        <Fieldset name="username" errors={username.errors}>
+          <Input type="text" name="username" value={username.value} onChange={handleInputChange} onBlur={handleInputBlur}
+            minLength={MIN_USERNAME_LENGTH} maxLength={MAX_USERNAME_LENGTH} />
+        </Fieldset>
+
+        <Fieldset name="password" errors={password.errors}>
+          <Input type="password" name="password" value={password.value} onChange={handleInputChange} onBlur={handleInputBlur}
+            minLength={MIN_PASSWORD_LENGTH} maxLength={MAX_PASSWORD_LENGTH} />
+        </Fieldset>
+
+        <Fieldset name="bio" errors={bio.errors}>
+          <Input type="text" name="bio" value={bio.value} onChange={handleInputChange} onBlur={handleInputBlur}
+            minLength={MIN_BIO_LENGTH} maxLength={MAX_BIO_LENGTH} />
+        </Fieldset>
+
+        <Switch label="Already have an account?" linkMessage="Log in" to="/user/login" />
+
+        <Action>
+          <Button type="submit" primary disabled={hasErrors}><LoginIcon />Submit</Button>
+          <Button type="reset" onClick={resetForm} >Reset</Button>
+        </Action>
+
+      </Form>
     </div>
   );
 }

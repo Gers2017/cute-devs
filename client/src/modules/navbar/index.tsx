@@ -3,13 +3,13 @@ import { useHistory, Link } from "react-router-dom";
 import CutedevIcon from "@icons/cutedevs";
 import Button from "@modules/button";
 import { useLogin } from "@context/loginContext";
-import { useGetSessionInfoQuery } from "@generated"
+import { useGetCutedevSessionQuery } from "@generated"
 
 export default function Navbar() {
   const { isLogin, userId, logout } = useLogin();
   const { push } = useHistory();
 
-  const [result, _reexecute] = useGetSessionInfoQuery({ variables: { cuteDevId: userId } });
+  const [result, _reexecute] = useGetCutedevSessionQuery({ variables: { id: userId } });
   const { data } = result;
 
   let username = "";
@@ -23,12 +23,12 @@ export default function Navbar() {
   return (
     <div className="bg-gray-800 py-2 px-4 flex justify-between items-center">
       <Link to="/">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
           <CutedevIcon />
           <h3 className="font-bold text-3xl">Cute Devs</h3>
         </div>
       </Link>
-      <nav>
+      <nav className="w-max">
         <ul className="flex justify-center items-center gap-4">
           {!isLogin ? (
             <>
@@ -41,19 +41,15 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              <Button onClick={() => logout()}>Logut</Button>
-              <Button
-                primary
-                onClick={() => {
-                  push("/posts/");
-                }}>
-                Create new post
-              </Button>
-              <li className="flex justify-start items-center text-gray-50 font-bold">
-                {/* TODO: add a menu to logout, setting, check profile, projects */}
+              {/* TODO: add a menu to logout, setting, check profile, projects */}
+              <Link className="inline-flex justify-start items-center gap-2font-bold" to={`/devs/${userId}`}>
                 <img src={imageUrl} alt={username} className="rounded-full w-10 h-10" />
                 <p>{username}</p>
-              </li>
+              </Link>
+              <Button fullwidth={false} onClick={() => logout()}>Logut</Button>
+              <Button primary fullwidth={false} onClick={() => { push("/posts/"); }}>
+                Create new post
+              </Button>
             </>
           )}
         </ul>

@@ -70,7 +70,7 @@ export default function CuteDevPage({ match }: CuteDevPageProps) {
               )}
             </section>
           </details>
-          {(isLogin && userId === id) && (<Button full>Edit profile</Button>)}
+          {(isLogin && userId === id) && (<Button fullwidth>Edit profile</Button>)}
         </div>
       </section>
       <CuteDevPosts cuteDev={cuteDev} />
