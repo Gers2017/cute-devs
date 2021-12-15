@@ -111,3 +111,14 @@ export function useFormReducer<TF extends object>(
     resetForm,
   };
 }
+
+export function generateFormField<T>(
+  value: T,
+  validator: (value: T) => string[],
+): Field<T> {
+  return {
+    value,
+    errors: [],
+    validator,
+  };
+}

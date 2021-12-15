@@ -75,26 +75,13 @@ export class CuteDevResolver {
     }
   }
 
+  // TODO: add register validation
   @Mutation((returns) => CuteDevResponse)
   async registerCuteDev(
     @Arg("username") username: string,
     @Arg("password") password: string,
     @Ctx() { res }: MyContext,
   ): Promise<CuteDevResponse> {
-    // validate password
-    // TODO: add validation after the frontend is complete
-
-    // const regex = new RegExp(
-    //   /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/gm,
-    // );
-
-    // const validPassword = regex.test(password);
-    // if (!validPassword) {
-    //   return {
-    //     errors: [{ field: "password", message: "Invalid password" }],
-    //   };
-    // }
-
     try {
       const usernameKey = username.toLocaleLowerCase().replace(/[\W]/gm, "_");
       const hashedPassword = await hash(password, 5);
@@ -163,8 +150,9 @@ export class CuteDevResolver {
       cuteDev,
     };
   }
-
-  // TODO: add authentication
+  /*
+    TODO: investigate typegraphql, private or auth endpoints to add authentication to editcutedev
+  */
   @Mutation(() => CuteDev, { nullable: true })
   async editCuteDev(@Arg("input") { id, editInput }: EditCuteDevInput) {
     const cutedev = await CuteDev.findOne(id);
@@ -181,7 +169,7 @@ export class CuteDevResolver {
     return result.raw[0];
   }
 
-  // TODO: add authentication
+  // TODO: add authentication for delete cutedev
   @Mutation(() => DeleteResponse)
   async deleteCuteDev(@Arg("id") id: string): Promise<DeleteResponse> {
     const cuteDevToDelete = await CuteDev.findOne(id);
