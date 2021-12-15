@@ -1,17 +1,52 @@
 import { CuteDev } from "../../entities/CuteDev";
-import { CuteDevResponse, DeleteResponse } from "../responses";
+import { AuthReponse, CuteDevResponse, DeleteResponse } from "../responses";
 import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
 import { MyContext } from "src/types/MyContext";
 import { hash, compare } from "bcrypt";
-import { setJidCookie, getJidPayload } from "../../../functions/jidToken";
-import { EditCuteDevInput } from "./CuteDevInput";
+import {
+  setJidCookie,
+  setRefreshToken,
+  tryToGetTokens,
+  clearTokens,
+} from "../../../functions/token";
+import { CuteDevsInput, EditCuteDevInput } from "./CuteDevInput";
 
 @Resolver(CuteDev)
 export class CuteDevResolver {
-  @Query(() => Boolean)
-  async me(@Ctx() { req }: MyContext) {
-    let payload = getJidPayload(req.cookies.jid);
-    return !!payload;
+  @Query(() => AuthReponse)
+  async me(@Ctx() { req, res }: MyContext): Promise<AuthReponse> {
+    try {
+      const { jidPayload, refreshPayload } = tryToGetTokens(req, res);
+
+      let userId = "";
+
+      if (jidPayload) userId = jidPayload.userId;
+      else if (refreshPayload) userId = refreshPayload.userId;
+
+      return {
+        isAuth: !!jidPayload || !!refreshPayload,
+        userId: userId,
+      };
+    } catch (e) {
+      return {
+        isAuth: false,
+        userId: "",
+      };
+    }
+  }
+
+  @Mutation(() => Boolean)
+  async logout(@Ctx() { req, res }: MyContext) {
+    try {
+      const { jidPayload, refreshPayload } = tryToGetTokens(req, res);
+      if (jidPayload || refreshPayload) {
+        clearTokens(res);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
   }
 
   @Query(() => CuteDev, { nullable: true })
@@ -28,37 +63,25 @@ export class CuteDevResolver {
   }
 
   @Query((returns) => [CuteDev])
-  async cuteDevs(
-    @Arg("limit", { defaultValue: 5 })
-      limit: number,
-  ) {
-    if (limit < 0) return [];
-    return await CuteDev.find({
-      take: limit,
-      relations: ["posts"],
-    });
+  async cuteDevs(@Arg("input") { limit }: CuteDevsInput) {
+    try {
+      if (limit < 0) return [];
+      return await CuteDev.find({
+        take: limit,
+        relations: ["posts"],
+      });
+    } catch (e) {
+      return [];
+    }
   }
 
+  // TODO: add register validation
   @Mutation((returns) => CuteDevResponse)
   async registerCuteDev(
     @Arg("username") username: string,
     @Arg("password") password: string,
     @Ctx() { res }: MyContext,
   ): Promise<CuteDevResponse> {
-    // validate password
-    // TODO: add validation after the frontend is complete
-
-    // const regex = new RegExp(
-    //   /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/gm,
-    // );
-
-    // const validPassword = regex.test(password);
-    // if (!validPassword) {
-    //   return {
-    //     errors: [{ field: "password", message: "Invalid password" }],
-    //   };
-    // }
-
     try {
       const usernameKey = username.toLocaleLowerCase().replace(/[\W]/gm, "_");
       const hashedPassword = await hash(password, 5);
@@ -76,6 +99,7 @@ export class CuteDevResolver {
       const userId = identifiers[0].id;
 
       setJidCookie(res, { userId });
+      setRefreshToken(res, { userId, sessionId: 1 });
 
       return {
         cuteDev: newCuteDev,
@@ -117,12 +141,18 @@ export class CuteDevResolver {
       };
     }
     setJidCookie(res, { userId: cuteDev.id });
+    setRefreshToken(res, {
+      userId: cuteDev.id,
+      sessionId: 1,
+    });
+
     return {
       cuteDev,
     };
   }
-
-  // TODO: add authentication
+  /*
+    TODO: investigate typegraphql, private or auth endpoints to add authentication to editcutedev
+  */
   @Mutation(() => CuteDev, { nullable: true })
   async editCuteDev(@Arg("input") { id, editInput }: EditCuteDevInput) {
     const cutedev = await CuteDev.findOne(id);
@@ -139,7 +169,7 @@ export class CuteDevResolver {
     return result.raw[0];
   }
 
-  // TODO: add authentication
+  // TODO: add authentication for delete cutedev
   @Mutation(() => DeleteResponse)
   async deleteCuteDev(@Arg("id") id: string): Promise<DeleteResponse> {
     const cuteDevToDelete = await CuteDev.findOne(id);

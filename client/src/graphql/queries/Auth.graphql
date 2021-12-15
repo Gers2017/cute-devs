@@ -1,0 +1,6 @@
+query Auth {
+  me {
+    isAuth
+    userId
+  }
+}

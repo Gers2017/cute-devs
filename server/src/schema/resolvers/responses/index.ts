@@ -2,6 +2,14 @@ import { ObjectType, Field, Int } from "type-graphql";
 import { CuteDev } from "../../entities/CuteDev";
 
 @ObjectType()
+export class AuthReponse {
+  @Field()
+  isAuth: boolean;
+  @Field()
+  userId: string;
+}
+
+@ObjectType()
 export class FieldError {
   @Field()
   field: string;

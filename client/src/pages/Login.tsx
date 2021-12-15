@@ -1,79 +1,77 @@
 import React from "react";
 import { useLoginCutedevMutation } from "@generated";
+import { useLogin } from "@context/loginContext";
 import { Redirect } from "react-router-dom";
-import useForm from "@hooks/useForm";
+import { useFormReducer } from "@hooks/useFormReducer";
 import LoginIcon from "@icons/login";
 import Button from "@modules/button";
-import Form from "@modules/form/Form";
-import Input from "@modules/form/Input";
-import FormField from "@modules/form/FormField";
-import { useLogin } from "@context/loginContext";
+import Input from "@modules/form/input";
+import Form from "@modules/form";
+import Fieldset from "@modules/form/fieldset";
+import Switch from "@modules/form/switch";
+
+interface LoginFields {
+  username: string;
+  password: string
+}
 
 export default function Login() {
-  const [_, loginCutedev] = useLoginCutedevMutation();
-  const { isLogged, setIsLogged } = useLogin();
+  const [_updateLoginMutation, loginMutation] = useLoginCutedevMutation();
+  const { isLogin, login } = useLogin()
 
-  const { formState, onInputChange, clearForm } = useForm({
-    username: "",
-    password: "",
-  });
+  const { formState, handleInputChange, handleInputBlur, resetForm } = useFormReducer<LoginFields>({
+    username: {
+      value: "",
+      errors: [],
+      validator: (value) => []
+    },
+    password: {
+      value: "",
+      errors: [],
+      validator: (value) => []
+    }
+  })
 
-  if (isLogged) return <Redirect to="/" />;
+  const { formFields: { username, password }, hasErrors } = formState;
 
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const { username, password } = formState;
-    try {
-      const { data, error } = await loginCutedev({ username, password });
-      if (error) throw error;
 
-      if (data && data.login) {
-        const { errors, cuteDev } = data.login;
-        errors && console.table(errors);
-        if (cuteDev) {
-          setIsLogged(true);
-          console.dir({
-            id: cuteDev.id,
-            username: cuteDev.username,
-          });
-        }
+    try {
+      const { data } = await loginMutation({ username: username.value, password: password.value })
+
+      if (data?.login.cuteDev) {
+        console.log({ data })
+        login();
       }
     } catch (e) {
       console.error(e);
     }
-    clearForm();
+
+    resetForm();
   }
 
-  return (
-    <div className="mx-auto my-8 w-max">
-      <h2 className="text-2xl mb-4">Login</h2>
-      <Form onSubmit={onSubmit}>
-        <FormField>
-          <label className="mb-2" htmlFor="username">
-            Username
-          </label>
-          <Input
-            type="text"
-            name="username"
-            onChange={(e) => onInputChange(e, (value) => value)}
-          />
-        </FormField>
-        <FormField>
-          <label className="mb-2" htmlFor="password">
-            Password
-          </label>
-          <Input
-            type="password"
-            name="password"
-            onChange={(e) => onInputChange(e, (value) => value)}
-          />
-        </FormField>
+  if (isLogin) return <Redirect to="/" />;
 
-        <Button primary full type="submit">
-          <LoginIcon />
-          <p>Login</p>
-        </Button>
+  return (
+    <div className="mt-28 flex justify-center">
+      <Form onSubmit={handleSubmit}>
+
+        <h2 className="text-3xl font-bold self-center">Login</h2>
+
+        <Fieldset name="username" errors={username.errors}>
+          <Input type="text" name="username" value={username.value} onChange={handleInputChange} onBlur={handleInputBlur} />
+        </Fieldset>
+
+        <Fieldset name="password" errors={password.errors}>
+          <Input type="password" name="password" value={password.value} onChange={handleInputChange} onBlur={handleInputBlur} />
+        </Fieldset>
+
+        <Switch label="New to Cutedevs?" linkMessage="Create an account" to="/user/create" />
+
+        <Button type="submit" primary disabled={hasErrors}><LoginIcon />Submit</Button>
       </Form>
     </div>
   );
-}
+}    

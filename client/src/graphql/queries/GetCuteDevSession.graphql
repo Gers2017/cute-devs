@@ -1,0 +1,6 @@
+query getCutedevSession($id: String!) {
+  cuteDev(id: $id) {
+    username
+    imageUrl
+  }
+}

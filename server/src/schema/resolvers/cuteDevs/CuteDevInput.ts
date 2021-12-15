@@ -1,5 +1,10 @@
-import { CuteDev } from "src/schema/entities/CuteDev";
-import { Field, ID, InputType } from "type-graphql";
+import { Field, ID, InputType, Int } from "type-graphql";
+
+@InputType()
+export class CuteDevsInput {
+  @Field((type) => Int, { nullable: true })
+  limit: number = 5;
+}
 
 @InputType()
 export class PartialCuteDevInput {
@@ -26,7 +31,4 @@ export class EditCuteDevInput {
 
   @Field()
   editInput: PartialCuteDevInput;
-  // editInput: Partial<
-  //   Pick<CuteDev, "username" | "bio" | "imageUrl" | "projects" | "languages">
-  // >;
 }
