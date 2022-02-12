@@ -32,3 +32,21 @@ export class EditCuteDevInput {
   @Field()
   editInput: PartialCuteDevInput;
 }
+
+@InputType()
+export class EditBio {
+  @Field(() => ID)
+  id!: string;
+
+  @Field()
+  bio: string;
+}
+
+@InputType()
+export class EditLanguages {
+  @Field(() => ID)
+  id!: string;
+
+  @Field((type) => [String])
+  languages: string[];
+}

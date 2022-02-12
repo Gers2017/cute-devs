@@ -9,7 +9,16 @@ import {
   tryToGetTokens,
   clearTokens,
 } from "../../../functions/token";
-import { CuteDevsInput, EditCuteDevInput } from "./CuteDevInput";
+import {
+  CuteDevsInput,
+  EditBio,
+  EditCuteDevInput,
+  EditLanguages,
+} from "./CuteDevInput";
+
+async function findCutedevById(id: string) {
+  return (await CuteDev.findOne(id)) || null;
+}
 
 @Resolver(CuteDev)
 export class CuteDevResolver {
@@ -167,6 +176,24 @@ export class CuteDevResolver {
       .execute();
 
     return result.raw[0];
+  }
+
+  @Mutation(() => Boolean)
+  async editBio(@Arg("input") { id, bio }: EditBio) {
+    const cutedev = await CuteDev.findOne(id);
+    if (!cutedev) return false;
+    cutedev.bio = bio;
+    await cutedev.save();
+    return true;
+  }
+
+  @Mutation(() => Boolean)
+  async editLanguages(@Arg("inut") { id, languages }: EditLanguages) {
+    const cuteDev = await findCutedevById(id);
+    if (!cuteDev) return false;
+    cuteDev.languages = languages;
+    await cuteDev.save();
+    return true;
   }
 
   // TODO: add authentication for delete cutedev

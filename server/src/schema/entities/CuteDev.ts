@@ -34,6 +34,10 @@ export class CuteDev extends BaseEntity {
   })
   bio: string;
 
+  @Field((type) => [String])
+  @Column("text", { array: true })
+  languages: string[];
+
   @Field(() => String)
   @Column("date")
   createdAt = new Date();
@@ -49,10 +53,6 @@ export class CuteDev extends BaseEntity {
   @Field((type) => [String])
   @Column("text", { array: true })
   projects: string[];
-
-  @Field((type) => [String])
-  @Column("text", { array: true })
-  languages: string[];
 
   @Field((type) => [Post], { defaultValue: [] })
   @OneToMany(() => Post, (post) => post.creator, {
