@@ -1,6 +1,6 @@
 mutation RegisterCutedev($password: String!, $username: String!) {
   registerCuteDev(password: $password, username: $username) {
-    cuteDev {
+    cutedev {
       id
       username
       createdAt

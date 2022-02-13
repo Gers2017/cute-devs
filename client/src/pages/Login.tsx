@@ -12,37 +12,43 @@ import Switch from "@modules/form/switch";
 
 interface LoginFields {
   username: string;
-  password: string
+  password: string;
 }
 
 export default function Login() {
   const [_updateLoginMutation, loginMutation] = useLoginCutedevMutation();
-  const { isLogin, login } = useLogin()
+  const { isLogin, login } = useLogin();
 
-  const { formState, handleInputChange, handleInputBlur, resetForm } = useFormReducer<LoginFields>({
-    username: {
-      value: "",
-      errors: [],
-      validator: (value) => []
-    },
-    password: {
-      value: "",
-      errors: [],
-      validator: (value) => []
-    }
-  })
+  const { formState, handleInputChange, handleInputBlur, resetForm } =
+    useFormReducer<LoginFields>({
+      username: {
+        value: "",
+        errors: [],
+        validator: (value) => [],
+      },
+      password: {
+        value: "",
+        errors: [],
+        validator: (value) => [],
+      },
+    });
 
-  const { formFields: { username, password }, hasErrors } = formState;
-
+  const {
+    formFields: { username, password },
+    hasErrors,
+  } = formState;
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     try {
-      const { data } = await loginMutation({ username: username.value, password: password.value })
+      const { data } = await loginMutation({
+        username: username.value,
+        password: password.value,
+      });
 
-      if (data?.login.cuteDev) {
-        console.log({ data })
+      if (data?.login.cutedev) {
+        console.log({ data });
         login();
       }
     } catch (e) {
@@ -57,21 +63,39 @@ export default function Login() {
   return (
     <div className="mt-28 flex justify-center">
       <Form onSubmit={handleSubmit}>
-
         <h2 className="text-3xl font-bold self-center">Login</h2>
 
         <Fieldset name="username" errors={username.errors}>
-          <Input type="text" name="username" value={username.value} onChange={handleInputChange} onBlur={handleInputBlur} />
+          <Input
+            type="text"
+            name="username"
+            value={username.value}
+            onChange={handleInputChange}
+            onBlur={handleInputBlur}
+          />
         </Fieldset>
 
         <Fieldset name="password" errors={password.errors}>
-          <Input type="password" name="password" value={password.value} onChange={handleInputChange} onBlur={handleInputBlur} />
+          <Input
+            type="password"
+            name="password"
+            value={password.value}
+            onChange={handleInputChange}
+            onBlur={handleInputBlur}
+          />
         </Fieldset>
 
-        <Switch label="New to Cutedevs?" linkMessage="Create an account" to="/user/create" />
+        <Switch
+          label="New to Cutedevs?"
+          linkMessage="Create an account"
+          to="/user/create"
+        />
 
-        <Button type="submit" primary disabled={hasErrors}><LoginIcon />Submit</Button>
+        <Button type="submit" primary disabled={hasErrors}>
+          <LoginIcon />
+          Submit
+        </Button>
       </Form>
     </div>
   );
-}    
+}

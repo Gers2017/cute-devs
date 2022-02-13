@@ -2,23 +2,18 @@ import { CuteDev } from "../../entities/CuteDev";
 import { AuthReponse, CuteDevResponse, DeleteResponse } from "../responses";
 import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
 import { MyContext } from "src/types/MyContext";
-import { hash, compare } from "bcrypt";
+import {
+  findCutedevById,
+  comparePasswords,
+  generateNewCutedev,
+} from "../../utils/resolverUtils";
 import {
   setJidCookie,
   setRefreshToken,
   tryToGetTokens,
   clearTokens,
 } from "../../../functions/token";
-import {
-  CuteDevsInput,
-  EditBio,
-  EditCuteDevInput,
-  EditLanguages,
-} from "./CuteDevInput";
-
-async function findCutedevById(id: string) {
-  return (await CuteDev.findOne(id)) || null;
-}
+import { CuteDevsInput, EditCuteDevInput } from "./CuteDevInput";
 
 @Resolver(CuteDev)
 export class CuteDevResolver {
@@ -92,17 +87,7 @@ export class CuteDevResolver {
     @Ctx() { res }: MyContext,
   ): Promise<CuteDevResponse> {
     try {
-      const usernameKey = username.toLocaleLowerCase().replace(/[\W]/gm, "_");
-      const hashedPassword = await hash(password, 5);
-
-      const newCuteDev = CuteDev.create({
-        username,
-        password: hashedPassword,
-        imageUrl: `https://avatars.dicebear.com/api/micah/${usernameKey}.svg`,
-        languages: [],
-        projects: [],
-        posts: [],
-      });
+      const newCuteDev = await generateNewCutedev(username, password);
 
       const { identifiers } = await CuteDev.insert(newCuteDev);
       const userId = identifiers[0].id;
@@ -111,7 +96,7 @@ export class CuteDevResolver {
       setRefreshToken(res, { userId, sessionId: 1 });
 
       return {
-        cuteDev: newCuteDev,
+        cutedev: newCuteDev,
       };
     } catch (e) {
       console.error(e);
@@ -135,7 +120,7 @@ export class CuteDevResolver {
       };
     }
     try {
-      const isValid = await compare(password, cuteDev.password);
+      const isValid = await comparePasswords(password, cuteDev.password);
 
       if (!isValid) {
         return {
@@ -156,43 +141,27 @@ export class CuteDevResolver {
     });
 
     return {
-      cuteDev,
+      cutedev: cuteDev,
     };
   }
-  /*
-    TODO: investigate typegraphql, private or auth endpoints to add authentication to editcutedev
-  */
-  @Mutation(() => CuteDev, { nullable: true })
-  async editCuteDev(@Arg("input") { id, editInput }: EditCuteDevInput) {
-    const cutedev = await CuteDev.findOne(id);
-    if (!cutedev) {
-      return null;
-    }
-    const result = await CuteDev.createQueryBuilder()
-      .update()
-      .set({ ...editInput })
-      .where("id = :id", { id })
-      .returning("*")
-      .execute();
-
-    return result.raw[0];
-  }
 
   @Mutation(() => Boolean)
-  async editBio(@Arg("input") { id, bio }: EditBio) {
-    const cutedev = await CuteDev.findOne(id);
+  async editCutedevProfile(
+    @Arg("input") { id, username, bio, languages, imageUrl }: EditCuteDevInput,
+  ) {
+    const cutedev = await findCutedevById(id);
     if (!cutedev) return false;
-    cutedev.bio = bio;
-    await cutedev.save();
-    return true;
-  }
 
-  @Mutation(() => Boolean)
-  async editLanguages(@Arg("inut") { id, languages }: EditLanguages) {
-    const cuteDev = await findCutedevById(id);
-    if (!cuteDev) return false;
-    cuteDev.languages = languages;
-    await cuteDev.save();
+    if (username && username.length > 0) cutedev.username = username;
+    if (bio && bio.length > 0) cutedev.bio = bio;
+    if (imageUrl && imageUrl.length > 0) cutedev.imageUrl = imageUrl; // TODO validate url
+    if (languages) cutedev.languages = languages.map((s) => s.toLowerCase());
+
+    try {
+      await cutedev.save();
+    } catch (e) {
+      return false;
+    }
     return true;
   }
 

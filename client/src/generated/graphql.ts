@@ -41,7 +41,7 @@ export type CuteDev = {
 
 export type CuteDevResponse = {
   __typename?: 'CuteDevResponse';
-  cuteDev?: Maybe<CuteDev>;
+  cutedev?: Maybe<CuteDev>;
   errors?: Maybe<Array<FieldError>>;
 };
 
@@ -55,9 +55,23 @@ export type DeleteResponse = {
   errors?: Maybe<Array<FieldError>>;
 };
 
-export type EditCuteDevInput = {
-  editInput: PartialCuteDevInput;
+export type EditBio = {
+  bio: Scalars['String'];
   id: Scalars['ID'];
+};
+
+export type EditCuteDevInput = {
+  bio?: Maybe<Scalars['String']>;
+  id: Scalars['ID'];
+  imageUrl?: Maybe<Scalars['String']>;
+  languages?: Maybe<Array<Scalars['String']>>;
+  projects?: Maybe<Array<Scalars['String']>>;
+  username?: Maybe<Scalars['String']>;
+};
+
+export type EditLanguages = {
+  id: Scalars['ID'];
+  languages: Array<Scalars['String']>;
 };
 
 export type ErrorMessage = {
@@ -76,7 +90,9 @@ export type Mutation = {
   createPost?: Maybe<Post>;
   deleteCuteDev: DeleteResponse;
   deletePost: DeleteResponse;
-  editCuteDev?: Maybe<CuteDev>;
+  editBio: Scalars['Boolean'];
+  editCutedevProfile: Scalars['Boolean'];
+  editLanguages: Scalars['Boolean'];
   login: CuteDevResponse;
   logout: Scalars['Boolean'];
   registerCuteDev: CuteDevResponse;
@@ -99,8 +115,18 @@ export type MutationDeletePostArgs = {
 };
 
 
-export type MutationEditCuteDevArgs = {
+export type MutationEditBioArgs = {
+  input: EditBio;
+};
+
+
+export type MutationEditCutedevProfileArgs = {
   input: EditCuteDevInput;
+};
+
+
+export type MutationEditLanguagesArgs = {
+  input: EditLanguages;
 };
 
 
@@ -118,14 +144,6 @@ export type MutationRegisterCuteDevArgs = {
 
 export type MutationStarPostArgs = {
   postId: Scalars['String'];
-};
-
-export type PartialCuteDevInput = {
-  bio?: Maybe<Scalars['String']>;
-  imageUrl?: Maybe<Scalars['String']>;
-  languages?: Maybe<Array<Scalars['String']>>;
-  projects?: Maybe<Array<Scalars['String']>>;
-  username?: Maybe<Scalars['String']>;
 };
 
 export type Post = {
@@ -179,12 +197,12 @@ export type StarPostResponse = {
   stars?: Maybe<Scalars['Int']>;
 };
 
-export type EditCuteDevMutationVariables = Exact<{
+export type EditCutedevMutationVariables = Exact<{
   input: EditCuteDevInput;
 }>;
 
 
-export type EditCuteDevMutation = { __typename?: 'Mutation', editCuteDev?: { __typename?: 'CuteDev', id: string, username: string, bio: string, imageUrl: string, languages: Array<string>, projects: Array<string> } | null | undefined };
+export type EditCutedevMutation = { __typename?: 'Mutation', editCutedevProfile: boolean };
 
 export type LoginCutedevMutationVariables = Exact<{
   password: Scalars['String'];
@@ -192,7 +210,7 @@ export type LoginCutedevMutationVariables = Exact<{
 }>;
 
 
-export type LoginCutedevMutation = { __typename?: 'Mutation', login: { __typename?: 'CuteDevResponse', cuteDev?: { __typename?: 'CuteDev', id: string, username: string } | null | undefined, errors?: Array<{ __typename?: 'FieldError', field: string, message: string }> | null | undefined } };
+export type LoginCutedevMutation = { __typename?: 'Mutation', login: { __typename?: 'CuteDevResponse', cutedev?: { __typename?: 'CuteDev', id: string, username: string } | null | undefined, errors?: Array<{ __typename?: 'FieldError', field: string, message: string }> | null | undefined } };
 
 export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
 
@@ -205,7 +223,7 @@ export type RegisterCutedevMutationVariables = Exact<{
 }>;
 
 
-export type RegisterCutedevMutation = { __typename?: 'Mutation', registerCuteDev: { __typename?: 'CuteDevResponse', cuteDev?: { __typename?: 'CuteDev', id: string, username: string, createdAt: string, updatedAt: string } | null | undefined, errors?: Array<{ __typename?: 'FieldError', field: string, message: string }> | null | undefined } };
+export type RegisterCutedevMutation = { __typename?: 'Mutation', registerCuteDev: { __typename?: 'CuteDevResponse', cutedev?: { __typename?: 'CuteDev', id: string, username: string, createdAt: string, updatedAt: string } | null | undefined, errors?: Array<{ __typename?: 'FieldError', field: string, message: string }> | null | undefined } };
 
 export type StartPostMutationVariables = Exact<{
   postId: Scalars['String'];
@@ -248,26 +266,19 @@ export type GetPostsQueryVariables = Exact<{
 export type GetPostsQuery = { __typename?: 'Query', posts: Array<{ __typename?: 'Post', id: string, text: string, stars: number, date: string, creator: { __typename?: 'CuteDev', id: string, username: string, imageUrl: string } }> };
 
 
-export const EditCuteDevDocument = gql`
-    mutation EditCuteDev($input: EditCuteDevInput!) {
-  editCuteDev(input: $input) {
-    id
-    username
-    bio
-    imageUrl
-    languages
-    projects
-  }
+export const EditCutedevDocument = gql`
+    mutation editCutedev($input: EditCuteDevInput!) {
+  editCutedevProfile(input: $input)
 }
     `;
 
-export function useEditCuteDevMutation() {
-  return Urql.useMutation<EditCuteDevMutation, EditCuteDevMutationVariables>(EditCuteDevDocument);
+export function useEditCutedevMutation() {
+  return Urql.useMutation<EditCutedevMutation, EditCutedevMutationVariables>(EditCutedevDocument);
 };
 export const LoginCutedevDocument = gql`
     mutation LoginCutedev($password: String!, $username: String!) {
   login(password: $password, username: $username) {
-    cuteDev {
+    cutedev {
       id
       username
     }
@@ -294,7 +305,7 @@ export function useLogoutMutation() {
 export const RegisterCutedevDocument = gql`
     mutation RegisterCutedev($password: String!, $username: String!) {
   registerCuteDev(password: $password, username: $username) {
-    cuteDev {
+    cutedev {
       id
       username
       createdAt

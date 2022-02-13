@@ -30,7 +30,7 @@ export class CuteDevResponse {
   errors?: FieldError[];
 
   @Field(() => CuteDev, { nullable: true })
-  cuteDev?: CuteDev;
+  cutedev?: CuteDev;
 }
 
 @ObjectType()

@@ -1,6 +1,6 @@
 mutation LoginCutedev($password: String!, $username: String!) {
   login(password: $password, username: $username) {
-    cuteDev {
+    cutedev {
       id
       username
     }

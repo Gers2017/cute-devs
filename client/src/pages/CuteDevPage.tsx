@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { useGetCuteDevProfileQuery } from "@generated";
 import { RouteComponentProps } from "react-router-dom";
-import EditCutedev from "@modules/cutedevs/edit"
-import CutedevProfile from "@modules/cutedevs/profile"
+import EditCutedev from "@modules/cutedevs/edit";
+import CutedevProfile from "@modules/cutedevs/profile";
 import CuteDevPosts from "@modules/cutedevs/posts";
+import Button from "@modules/button";
 
-interface CuteDevPageProps extends RouteComponentProps<{ id: string }> { }
+interface CuteDevPageProps extends RouteComponentProps<{ id: string }> {}
 
 /*
   TODO: Make error and loading components
@@ -23,12 +24,14 @@ const Error = () => (
 );
 
 export default function CuteDevPage({ match }: CuteDevPageProps) {
-  const [isEditing, setIsEditing] = useState(false)
+  const [isEditing, setIsEditing] = useState(false);
 
   const { id } = match.params;
-  const [profileResult, _] = useGetCuteDevProfileQuery({
-    variables: { cuteDevId: id },
-  });
+  const [profileResult, reexecuteGetCuteDevProfile] = useGetCuteDevProfileQuery(
+    {
+      variables: { cuteDevId: id },
+    },
+  );
 
   if (profileResult.fetching) return <Loading />;
   if (profileResult.error) return <Error />;
@@ -37,12 +40,24 @@ export default function CuteDevPage({ match }: CuteDevPageProps) {
   const { cuteDev } = profileResult.data;
   const { imageUrl } = cuteDev;
 
-
   return (
     <div className="grid py-4 lg:grid-cols-4 grid-cols-1">
       <section className="col-span-1 flex flex-col items-center py-2 md:px-4 lg:px-6 gap-4 border-r border-gray-700 font-normal">
         <img className="rounded-full w-2/5 md:w-1/2 lg:w-full" src={imageUrl} />
-        {isEditing ? <EditCutedev cuteDev={cuteDev} setIsEditing={setIsEditing} /> : <CutedevProfile cuteDev={cuteDev} setIsEditing={setIsEditing} />}
+        {isEditing ? (
+          <EditCutedev
+            cuteDev={cuteDev}
+            setIsEditing={setIsEditing}
+            onUpdate={() => {
+              reexecuteGetCuteDevProfile();
+            }}
+          />
+        ) : (
+          <>
+            <CutedevProfile cuteDev={cuteDev} setIsEditing={setIsEditing} />
+            <Button onClick={() => setIsEditing(true)}>Edit profile</Button>
+          </>
+        )}
       </section>
       <CuteDevPosts cuteDev={cuteDev} />
     </div>

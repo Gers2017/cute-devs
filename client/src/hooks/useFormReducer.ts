@@ -83,7 +83,9 @@ export function useFormReducer<TF extends object>(
     return initialFormState;
   }
 
-  function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleInputChange<T extends HTMLInputElement | HTMLTextAreaElement>(
+    e: React.ChangeEvent<T>,
+  ) {
     const { name, value } = e.target;
     dispatch({
       type: "update",
@@ -91,7 +93,9 @@ export function useFormReducer<TF extends object>(
     });
   }
 
-  function handleInputBlur(e: React.FocusEvent<HTMLInputElement>) {
+  function handleInputBlur<T extends HTMLInputElement | HTMLTextAreaElement>(
+    e: React.FocusEvent<T>,
+  ) {
     const { name, value } = e.target;
     dispatch({
       type: "blur",

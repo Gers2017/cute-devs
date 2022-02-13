@@ -7,7 +7,10 @@ export class CuteDevsInput {
 }
 
 @InputType()
-export class PartialCuteDevInput {
+export class EditCuteDevInput {
+  @Field(() => ID)
+  id!: string;
+
   @Field((type) => String, { nullable: true })
   username: string;
 
@@ -21,32 +24,5 @@ export class PartialCuteDevInput {
   projects: string[];
 
   @Field((type) => [String], { nullable: true })
-  languages: string[];
-}
-
-@InputType()
-export class EditCuteDevInput {
-  @Field(() => ID)
-  id!: string;
-
-  @Field()
-  editInput: PartialCuteDevInput;
-}
-
-@InputType()
-export class EditBio {
-  @Field(() => ID)
-  id!: string;
-
-  @Field()
-  bio: string;
-}
-
-@InputType()
-export class EditLanguages {
-  @Field(() => ID)
-  id!: string;
-
-  @Field((type) => [String])
   languages: string[];
 }
