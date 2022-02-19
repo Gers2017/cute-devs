@@ -48,7 +48,6 @@ export default function Login() {
       });
 
       if (data?.login.cutedev) {
-        console.log({ data });
         login();
       }
     } catch (e) {

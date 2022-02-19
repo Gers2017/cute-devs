@@ -1,5 +1,5 @@
 import { useGetPostsQuery } from "@generated";
-import Posts from "@modules/post/Posts";
+import Post from "@modules/post";
 
 export default function Home() {
   const [result, reexecuteQuery] = useGetPostsQuery({
@@ -17,9 +17,14 @@ export default function Home() {
   }
 
   return (
-    <div className="py-4 grid grid-cols-3	justify-items-stretch items-start gap-6">
-      <section>todo</section>
-      <Posts data={data} />
+    <div className="py-4 flex flex-col justify-start items-center gap-2">
+      <section className="flex flex-col gap-4">
+        {data && data.posts.length > 0 ? (
+          data.posts.map((post) => <Post key={post.id} post={post} />)
+        ) : (
+          <p>No data...</p>
+        )}
+      </section>
     </div>
   );
 }

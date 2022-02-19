@@ -8,10 +8,5 @@ export default function TextArea({
   fontWeight = "font-semibold",
   ...rest
 }: TextAreaProps) {
-  return (
-    <textarea
-      className={`${fontWeight} py-1 px-2 rounded-md bg-gray-700 text-gray-50`}
-      {...rest}
-    />
-  );
+  return <textarea className={`${fontWeight}`} {...rest} />;
 }

@@ -68,3 +68,21 @@ export function languagesValidator(languages: string): string[] {
 
   return errors;
 }
+
+export function imageUrlValidator(imageUrl: string): string[] {
+  let errors = [];
+  const githubRegex = new RegExp(
+    /(https):(\/\/avatars.githubusercontent.com\/u\/\d+\?v=4)/gi,
+  );
+  const dicebearRegex = new RegExp(
+    /(https):(\/\/avatars.dicebear.com\/api\/[a-z-]+\/)\w+(.svg)/gi,
+  );
+
+  if (!githubRegex.test(imageUrl) && !dicebearRegex.test(imageUrl)) {
+    errors.push(
+      `Make sure the image url is a valid twitter/github/dicebear profile picture url`,
+    );
+  }
+
+  return errors;
+}

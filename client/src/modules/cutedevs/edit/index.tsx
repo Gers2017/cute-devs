@@ -8,6 +8,7 @@ import {
   usernameValidator,
   bioValidator,
   languagesValidator,
+  imageUrlValidator,
   MAX_BIO_LENGTH,
   MAX_USERNAME_LENGTH,
   MIN_BIO_LENGTH,
@@ -18,6 +19,7 @@ import CutedevProfileProps from "@customTypes/CutedevProfile";
 import { useEditCutedevMutation } from "@generated";
 
 interface EditForm {
+  imageUrl: string;
   username: string;
   bio: string;
   languages: string;
@@ -33,6 +35,7 @@ export default function EditCutedev({
 }: EditCutedevProps) {
   const { formState, handleInputChange, handleInputBlur } =
     useFormReducer<EditForm>({
+      imageUrl: generateFormField(cuteDev.imageUrl, imageUrlValidator),
       username: generateFormField(cuteDev.username, usernameValidator),
       bio: generateFormField(cuteDev.bio, bioValidator),
       languages: generateFormField(
@@ -42,7 +45,7 @@ export default function EditCutedev({
     });
 
   const { formFields, hasErrors } = formState;
-  const { username, bio, languages } = formFields;
+  const { imageUrl, username, bio, languages } = formFields;
 
   const [_editMutationState, editMutation] = useEditCutedevMutation();
 
@@ -53,6 +56,7 @@ export default function EditCutedev({
       const { data } = await editMutation({
         input: {
           id: cuteDev.id,
+          imageUrl: imageUrl.value,
           username: username.value,
           bio: bio.value,
           languages: languages.value.split(", ").map((lang) => lang.trim()),
@@ -71,6 +75,22 @@ export default function EditCutedev({
   return (
     <div className="w-full">
       <form className="flex flex-col gap-2 py-4 px-1" onSubmit={handleSubmit}>
+        <Fieldset
+          column
+          gap="gap-2"
+          padding="p-1"
+          name="imageUrl"
+          errors={imageUrl.errors}>
+          <Input
+            type="text"
+            name="imageUrl"
+            fontWeight="font-thin"
+            value={imageUrl.value}
+            onChange={handleInputChange}
+            onBlur={handleInputBlur}
+          />
+        </Fieldset>
+
         <Fieldset
           column
           gap="gap-2"
@@ -105,12 +125,6 @@ export default function EditCutedev({
             minLength={MIN_BIO_LENGTH}
             maxLength={MAX_BIO_LENGTH}
           />
-          {/* <Input
-            type="text"
-            name="bio"
-            fontWeight="font-thin"
-            value={bio.value}
-          /> */}
         </Fieldset>
         <Fieldset
           name="languages (separated by coma)"

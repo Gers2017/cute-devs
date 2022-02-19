@@ -29,7 +29,7 @@ export default function index({ post }: PostProps) {
       <footer className="flex justify-start">
         <Button>
           <Star />
-          {post.stars}
+          <span>{post.stars}</span>
         </Button>
       </footer>
     </div>

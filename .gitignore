@@ -73,3 +73,4 @@ coverage
 /*/.yarn/install-state.gz
 /*/.pnp.*
 
+*.todo

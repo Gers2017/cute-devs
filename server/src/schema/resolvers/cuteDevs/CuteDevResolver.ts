@@ -6,6 +6,7 @@ import {
   findCutedevById,
   comparePasswords,
   generateNewCutedev,
+  isValidCutedevImageUrl,
 } from "../../utils/resolverUtils";
 import {
   setJidCookie,
@@ -66,7 +67,7 @@ export class CuteDevResolver {
     }
   }
 
-  @Query((returns) => [CuteDev])
+  @Query(() => [CuteDev])
   async cuteDevs(@Arg("input") { limit }: CuteDevsInput) {
     try {
       if (limit < 0) return [];
@@ -79,8 +80,7 @@ export class CuteDevResolver {
     }
   }
 
-  // TODO: add register validation
-  @Mutation((returns) => CuteDevResponse)
+  @Mutation(() => CuteDevResponse)
   async registerCuteDev(
     @Arg("username") username: string,
     @Arg("password") password: string,
@@ -106,7 +106,6 @@ export class CuteDevResolver {
     }
   }
 
-  // ==> Login resolver
   @Mutation(() => CuteDevResponse)
   async login(
     @Arg("username") username: string,
@@ -154,8 +153,14 @@ export class CuteDevResolver {
 
     if (username && username.length > 0) cutedev.username = username;
     if (bio && bio.length > 0) cutedev.bio = bio;
-    if (imageUrl && imageUrl.length > 0) cutedev.imageUrl = imageUrl; // TODO validate url
-    if (languages) cutedev.languages = languages.map((s) => s.toLowerCase());
+
+    if (imageUrl && imageUrl.length > 0 && isValidCutedevImageUrl(imageUrl)) {
+      cutedev.imageUrl = imageUrl;
+    }
+
+    if (languages && languages.length > 0) {
+      cutedev.languages = languages.map((s) => s.toLowerCase());
+    }
 
     try {
       await cutedev.save();
@@ -165,10 +170,9 @@ export class CuteDevResolver {
     return true;
   }
 
-  // TODO: add authentication for delete cutedev
   @Mutation(() => DeleteResponse)
   async deleteCuteDev(@Arg("id") id: string): Promise<DeleteResponse> {
-    const cuteDevToDelete = await CuteDev.findOne(id);
+    const cuteDevToDelete = await findCutedevById(id);
     if (!cuteDevToDelete) {
       return {
         deleted: false,

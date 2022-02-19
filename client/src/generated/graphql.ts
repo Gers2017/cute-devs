@@ -55,11 +55,6 @@ export type DeleteResponse = {
   errors?: Maybe<Array<FieldError>>;
 };
 
-export type EditBio = {
-  bio: Scalars['String'];
-  id: Scalars['ID'];
-};
-
 export type EditCuteDevInput = {
   bio?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
@@ -67,11 +62,6 @@ export type EditCuteDevInput = {
   languages?: Maybe<Array<Scalars['String']>>;
   projects?: Maybe<Array<Scalars['String']>>;
   username?: Maybe<Scalars['String']>;
-};
-
-export type EditLanguages = {
-  id: Scalars['ID'];
-  languages: Array<Scalars['String']>;
 };
 
 export type ErrorMessage = {
@@ -90,9 +80,7 @@ export type Mutation = {
   createPost?: Maybe<Post>;
   deleteCuteDev: DeleteResponse;
   deletePost: DeleteResponse;
-  editBio: Scalars['Boolean'];
   editCutedevProfile: Scalars['Boolean'];
-  editLanguages: Scalars['Boolean'];
   login: CuteDevResponse;
   logout: Scalars['Boolean'];
   registerCuteDev: CuteDevResponse;
@@ -115,18 +103,8 @@ export type MutationDeletePostArgs = {
 };
 
 
-export type MutationEditBioArgs = {
-  input: EditBio;
-};
-
-
 export type MutationEditCutedevProfileArgs = {
   input: EditCuteDevInput;
-};
-
-
-export type MutationEditLanguagesArgs = {
-  input: EditLanguages;
 };
 
 
@@ -197,6 +175,20 @@ export type StarPostResponse = {
   stars?: Maybe<Scalars['Int']>;
 };
 
+export type CreatePostMutationVariables = Exact<{
+  input: CreatePostInput;
+}>;
+
+
+export type CreatePostMutation = { __typename?: 'Mutation', createPost?: { __typename?: 'Post', id: string, date: string, text: string, stars: number, creator: { __typename?: 'CuteDev', id: string, username: string, imageUrl: string } } | null | undefined };
+
+export type DeletePostMutationVariables = Exact<{
+  deletePostId: Scalars['String'];
+}>;
+
+
+export type DeletePostMutation = { __typename?: 'Mutation', deletePost: { __typename?: 'DeleteResponse', deleted: boolean, errors?: Array<{ __typename?: 'FieldError', field: string, message: string }> | null | undefined } };
+
 export type EditCutedevMutationVariables = Exact<{
   input: EditCuteDevInput;
 }>;
@@ -266,6 +258,40 @@ export type GetPostsQueryVariables = Exact<{
 export type GetPostsQuery = { __typename?: 'Query', posts: Array<{ __typename?: 'Post', id: string, text: string, stars: number, date: string, creator: { __typename?: 'CuteDev', id: string, username: string, imageUrl: string } }> };
 
 
+export const CreatePostDocument = gql`
+    mutation CreatePost($input: CreatePostInput!) {
+  createPost(input: $input) {
+    id
+    date
+    text
+    stars
+    creator {
+      id
+      username
+      imageUrl
+    }
+  }
+}
+    `;
+
+export function useCreatePostMutation() {
+  return Urql.useMutation<CreatePostMutation, CreatePostMutationVariables>(CreatePostDocument);
+};
+export const DeletePostDocument = gql`
+    mutation DeletePost($deletePostId: String!) {
+  deletePost(id: $deletePostId) {
+    deleted
+    errors {
+      field
+      message
+    }
+  }
+}
+    `;
+
+export function useDeletePostMutation() {
+  return Urql.useMutation<DeletePostMutation, DeletePostMutationVariables>(DeletePostDocument);
+};
 export const EditCutedevDocument = gql`
     mutation editCutedev($input: EditCuteDevInput!) {
   editCutedevProfile(input: $input)

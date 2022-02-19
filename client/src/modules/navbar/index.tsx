@@ -3,13 +3,17 @@ import { useHistory, Link } from "react-router-dom";
 import CutedevIcon from "@icons/cutedevs";
 import Button from "@modules/button";
 import { useLogin } from "@context/loginContext";
-import { useGetCutedevSessionQuery } from "@generated"
+import { useGetCutedevSessionQuery } from "@generated";
+
+// FIXME: Restore button, after testing posts
 
 export default function Navbar() {
   const { isLogin, userId, logout } = useLogin();
   const { push } = useHistory();
 
-  const [result, _reexecute] = useGetCutedevSessionQuery({ variables: { id: userId } });
+  const [result, _reexecute] = useGetCutedevSessionQuery({
+    variables: { id: userId },
+  });
   const { data } = result;
 
   let username = "";
@@ -41,17 +45,29 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              {/* TODO: add a menu to logout, setting, check profile, projects */}
-              <Link className="inline-flex justify-start items-center gap-2font-bold" to={`/devs/${userId}`}>
-                <img src={imageUrl} alt={username} className="rounded-full w-10 h-10" />
+              <Link
+                className="inline-flex justify-start items-center gap-2font-bold"
+                to={`/devs/${userId}`}>
+                <img
+                  src={imageUrl}
+                  alt={username}
+                  className="rounded-full w-10 h-10"
+                />
                 <p>{username}</p>
               </Link>
-              <Button fullwidth={false} onClick={() => logout()}>Logut</Button>
-              <Button primary fullwidth={false} onClick={() => { push("/posts/"); }}>
-                Create new post
+              <Button fullwidth={false} onClick={() => logout()}>
+                Logut
               </Button>
             </>
           )}
+          <Button
+            primary
+            fullwidth={false}
+            onClick={() => {
+              push("/posts/");
+            }}>
+            Create new post
+          </Button>
         </ul>
       </nav>
     </div>

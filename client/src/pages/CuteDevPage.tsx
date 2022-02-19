@@ -8,10 +8,6 @@ import Button from "@modules/button";
 
 interface CuteDevPageProps extends RouteComponentProps<{ id: string }> {}
 
-/*
-  TODO: Make error and loading components
-*/
-
 const Loading = () => (
   <p>
     Loading...<span className="font-bold text-blue-500">/*[]*/</span>

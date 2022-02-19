@@ -29,3 +29,14 @@ export async function generateNewCutedev(username: string, password: string) {
     posts: [],
   });
 }
+
+export function isValidCutedevImageUrl(imageurl: string) {
+  const githubRegex = new RegExp(
+    /(https):(\/\/avatars.githubusercontent.com\/u\/\d+\?v=4)/gi,
+  );
+  const dicebearRegex = new RegExp(
+    /(https):(\/\/avatars.dicebear.com\/api\/[a-z-]+\/)\w+(.svg)/gi,
+  );
+
+  return githubRegex.test(imageurl) || dicebearRegex.test(imageurl);
+}

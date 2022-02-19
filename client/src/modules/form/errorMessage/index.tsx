@@ -1,12 +1,12 @@
 interface ErrorMessageProps {
-  errors: string[]
+  errors: string[];
 }
 export default function ErrorMessage({ errors }: ErrorMessageProps) {
   return (
-    <ul className="list-disc text-red-500 text-sm">
+    <ul className="list-disc text-red-500 text-sm italic">
       {errors.map((message) => (
         <li key={message}>{message}</li>
       ))}
     </ul>
-  )
+  );
 }
