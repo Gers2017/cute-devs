@@ -5,7 +5,7 @@ config();
 import { PORT } from "./constants";
 import { ApolloServer } from "apollo-server-express";
 import express from "express";
-import { MyContext } from "./types/MyContext";
+import { MyContext } from "./types/context";
 import cookieParser from "cookie-parser";
 
 // typeorm and typegraphql config
@@ -32,7 +32,7 @@ async function startApolloServer() {
   server.applyMiddleware({
     app,
     cors: {
-      origin: ["https://studio.apollographql.com", "http://localhost:3000"],
+      origin: ["https://studio.apollographql.com", `http://localhost:${PORT}`],
       credentials: true,
     },
   });

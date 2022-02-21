@@ -1,0 +1,6 @@
+query CutedevProfile($cutedevId: String!) {
+  cuteDev(id: $cutedevId) {
+    username
+    imageUrl
+  }
+}

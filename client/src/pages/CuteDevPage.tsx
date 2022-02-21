@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useGetCuteDevProfileQuery } from "@generated";
+import { useCutedevQuery } from "@generated";
 import { RouteComponentProps } from "react-router-dom";
 import EditCutedev from "@modules/cutedevs/edit";
 import CutedevProfile from "@modules/cutedevs/profile";
@@ -23,11 +23,9 @@ export default function CuteDevPage({ match }: CuteDevPageProps) {
   const [isEditing, setIsEditing] = useState(false);
 
   const { id } = match.params;
-  const [profileResult, reexecuteGetCuteDevProfile] = useGetCuteDevProfileQuery(
-    {
-      variables: { cuteDevId: id },
-    },
-  );
+  const [profileResult, reexecuteGetCuteDevProfile] = useCutedevQuery({
+    variables: { cuteDevId: id },
+  });
 
   if (profileResult.fetching) return <Loading />;
   if (profileResult.error) return <Error />;
@@ -51,7 +49,6 @@ export default function CuteDevPage({ match }: CuteDevPageProps) {
         ) : (
           <>
             <CutedevProfile cuteDev={cuteDev} setIsEditing={setIsEditing} />
-            <Button onClick={() => setIsEditing(true)}>Edit profile</Button>
           </>
         )}
       </section>

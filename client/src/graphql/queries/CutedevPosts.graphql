@@ -1,4 +1,4 @@
-query GetCuteDevPosts($input: PostsInput!) {
+query CutedevPosts($input: PostsInput!) {
   posts(input: $input) {
     id
     stars

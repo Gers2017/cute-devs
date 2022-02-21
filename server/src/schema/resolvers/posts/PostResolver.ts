@@ -2,26 +2,34 @@ import { CuteDev } from "../../entities/CuteDev";
 import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
 import { Post } from "../../entities/Post";
 import { CreatePostInput, PostsInput } from "./PostInput";
-import { DeleteResponse, StarPostResponse } from "../responses";
-import { MyContext } from "src/types/MyContext";
-import { getJidPayload } from "../../../functions/token";
+import {
+  CreatePostdevResponse,
+  DeleteResponse,
+  OperationError,
+  StarPostResponse,
+} from "../responses";
+import { MyContext } from "../../../types/context";
+import { AuthUser } from "../auth";
+
+async function getPostById(id: string, withCreator?: boolean) {
+  let options = withCreator ? { relations: ["creator"] } : undefined;
+  return await Post.findOne(id, options);
+}
 
 @Resolver(Post)
 export class PostResolver {
-  @Query((returns) => Post, {
+  @Query(() => Post, {
     nullable: true,
   })
   async post(@Arg("id") id: string) {
     try {
-      return await Post.findOne(id, {
-        relations: ["creator"],
-      });
+      return await getPostById(id, true);
     } catch (e) {
       return null;
     }
   }
 
-  @Query((returns) => [Post])
+  @Query(() => [Post])
   async posts(@Arg("input") { skip, take, creatorId, reverse }: PostsInput) {
     try {
       return await Post.find({
@@ -39,91 +47,114 @@ export class PostResolver {
     }
   }
 
-  @Mutation((returns) => StarPostResponse)
+  @Mutation(() => StarPostResponse)
   async starPost(
     @Arg("postId") postId: string,
     @Ctx() { req }: MyContext,
   ): Promise<StarPostResponse> {
-    const { jid } = req.cookies;
-    if (!jid) {
-      return { error: { message: "No jid cookie" } };
-    }
+    const { error, cutedev } = await AuthUser(req);
+    if (!cutedev) return { error };
 
-    const payload = getJidPayload(jid);
+    const post = await getPostById(postId, true);
 
-    if (!payload) return { error: { message: "Unauthorized" } };
-
-    const currentPost = await Post.findOne(postId, {
-      relations: ["creator"],
-    });
-
-    if (!currentPost) {
-      return { error: { message: `No post with id ${postId}` } };
+    if (!post) {
+      return {
+        error: new OperationError("star post", "No such a post"),
+      };
     }
 
     try {
-      const newStars = currentPost.stars + 1;
-      await Post.update(postId, {
-        stars: newStars,
-      });
-
+      post.stars += 1;
+      await post.save();
       return {
-        stars: newStars,
+        stars: post.stars,
       };
     } catch (e) {
       console.error(e);
       return {
-        error: {
-          message: `Unexpected error at starring post with id ${postId}`,
-        },
+        error: new OperationError("star post", "Error at starring post"),
       };
     }
   }
 
-  @Mutation((returns) => Post, {
-    nullable: true,
-  })
-  async createPost(@Arg("input") { text, creatorId }: CreatePostInput) {
-    const creator = await CuteDev.findOne(creatorId);
-    if (!creator) return false;
+  @Mutation(() => CreatePostdevResponse)
+  async createPost(
+    @Ctx() { req }: MyContext,
+    @Arg("text") text: string,
+  ): Promise<CreatePostdevResponse> {
+    const { error, cutedev: creator } = await AuthUser(req);
+    if (!creator)
+      return {
+        error,
+      };
+
     try {
       const newPost = Post.create({
         text,
         creator,
         stars: 0,
       });
+      const { identifiers } = await Post.insert(newPost);
 
-      await Post.insert(newPost);
-      return newPost;
+      const post = await getPostById(identifiers[0].id, true);
+
+      if (!post) {
+        return {
+          error: new OperationError("create post", "Error creating post"),
+        };
+      }
+      return {
+        post,
+      };
     } catch (e) {
       console.error(e);
-      return null;
+      return {
+        error: new OperationError("create post", "Error creating post"),
+      };
     }
   }
 
-  @Mutation((returns) => DeleteResponse)
-  async deletePost(@Arg("id") id: string): Promise<DeleteResponse> {
+  @Mutation(() => DeleteResponse)
+  async deletePost(
+    @Ctx() { req }: MyContext,
+    @Arg("postId") postId: string,
+  ): Promise<DeleteResponse> {
+    const { error, cutedev } = await AuthUser(req);
+    if (!cutedev)
+      return {
+        deleted: false,
+        error,
+      };
+
     try {
-      const postToDelete = await Post.findOne(id);
-      if (!postToDelete) {
+      const post = await getPostById(postId, true);
+
+      if (!post) {
         return {
           deleted: false,
-          errors: [{ field: "id", message: `No post with id ${id}` }],
+          error: new OperationError("delete post", "No such a post"),
         };
       }
-      await Post.remove([postToDelete]);
+
+      if (post.creator.id !== cutedev.id) {
+        return {
+          deleted: false,
+          error: new OperationError(
+            "delete post",
+            "Cutedev can't delete this post",
+          ),
+        };
+      }
+
+      await Post.remove([post]);
       return {
         deleted: true,
       };
     } catch (e) {
+      console.error(e);
       return {
         deleted: false,
-        errors: [
-          {
-            field: "id",
-            message: `Unexpected error at deleting post with id ${id}`,
-          },
-        ],
+        error: new OperationError("delete post", "Error at deleting post"),
       };
     }
   }

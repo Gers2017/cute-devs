@@ -14,15 +14,16 @@ export type Scalars = {
   Float: number;
 };
 
-export type AuthReponse = {
-  __typename?: 'AuthReponse';
-  isAuth: Scalars['Boolean'];
-  userId: Scalars['String'];
+export type AuthUserResponse = {
+  __typename?: 'AuthUserResponse';
+  error?: Maybe<OperationError>;
+  success: Scalars['Boolean'];
 };
 
-export type CreatePostInput = {
-  creatorId: Scalars['ID'];
-  text: Scalars['String'];
+export type CreatePostdevResponse = {
+  __typename?: 'CreatePostdevResponse';
+  error?: Maybe<OperationError>;
+  post?: Maybe<Post>;
 };
 
 export type CuteDev = {
@@ -39,12 +40,6 @@ export type CuteDev = {
   username: Scalars['String'];
 };
 
-export type CuteDevResponse = {
-  __typename?: 'CuteDevResponse';
-  cutedev?: Maybe<CuteDev>;
-  errors?: Maybe<Array<FieldError>>;
-};
-
 export type CuteDevsInput = {
   limit?: Maybe<Scalars['Int']>;
 };
@@ -52,10 +47,25 @@ export type CuteDevsInput = {
 export type DeleteResponse = {
   __typename?: 'DeleteResponse';
   deleted: Scalars['Boolean'];
-  errors?: Maybe<Array<FieldError>>;
+  error?: Maybe<OperationError>;
 };
 
 export type EditCuteDevInput = {
+  bio?: Maybe<Scalars['String']>;
+  imageUrl?: Maybe<Scalars['String']>;
+  languages?: Maybe<Array<Scalars['String']>>;
+  projects?: Maybe<Array<Scalars['String']>>;
+  username?: Maybe<Scalars['String']>;
+};
+
+export type EditCutedevResponse = {
+  __typename?: 'EditCutedevResponse';
+  edited?: Maybe<EditedCutedev>;
+  error?: Maybe<OperationError>;
+};
+
+export type EditedCutedev = {
+  __typename?: 'EditedCutedev';
   bio?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
   imageUrl?: Maybe<Scalars['String']>;
@@ -64,42 +74,33 @@ export type EditCuteDevInput = {
   username?: Maybe<Scalars['String']>;
 };
 
-export type ErrorMessage = {
-  __typename?: 'ErrorMessage';
-  message: Scalars['String'];
-};
-
-export type FieldError = {
-  __typename?: 'FieldError';
-  field: Scalars['String'];
-  message: Scalars['String'];
+export type LogoutResponse = {
+  __typename?: 'LogoutResponse';
+  error?: Maybe<OperationError>;
+  success: Scalars['Boolean'];
 };
 
 export type Mutation = {
   __typename?: 'Mutation';
-  createPost?: Maybe<Post>;
+  createPost: CreatePostdevResponse;
   deleteCuteDev: DeleteResponse;
   deletePost: DeleteResponse;
-  editCutedevProfile: Scalars['Boolean'];
-  login: CuteDevResponse;
-  logout: Scalars['Boolean'];
-  registerCuteDev: CuteDevResponse;
+  editCutedevProfile: EditCutedevResponse;
+  login: TokenResponse;
+  logout: LogoutResponse;
+  refresh: AuthUserResponse;
+  registerCuteDev: TokenResponse;
   starPost: StarPostResponse;
 };
 
 
 export type MutationCreatePostArgs = {
-  input: CreatePostInput;
-};
-
-
-export type MutationDeleteCuteDevArgs = {
-  id: Scalars['String'];
+  text: Scalars['String'];
 };
 
 
 export type MutationDeletePostArgs = {
-  id: Scalars['String'];
+  postId: Scalars['String'];
 };
 
 
@@ -124,6 +125,12 @@ export type MutationStarPostArgs = {
   postId: Scalars['String'];
 };
 
+export type OperationError = {
+  __typename?: 'OperationError';
+  details: Scalars['String'];
+  type: Scalars['String'];
+};
+
 export type Post = {
   __typename?: 'Post';
   creator: CuteDev;
@@ -144,7 +151,7 @@ export type Query = {
   __typename?: 'Query';
   cuteDev?: Maybe<CuteDev>;
   cuteDevs: Array<CuteDev>;
-  me: AuthReponse;
+  me: AuthUserResponse;
   post?: Maybe<Post>;
   posts: Array<Post>;
 };
@@ -171,104 +178,115 @@ export type QueryPostsArgs = {
 
 export type StarPostResponse = {
   __typename?: 'StarPostResponse';
-  error?: Maybe<ErrorMessage>;
+  error?: Maybe<OperationError>;
   stars?: Maybe<Scalars['Int']>;
 };
 
+export type TokenResponse = {
+  __typename?: 'TokenResponse';
+  accessToken?: Maybe<Scalars['String']>;
+  error?: Maybe<OperationError>;
+};
+
 export type CreatePostMutationVariables = Exact<{
-  input: CreatePostInput;
+  text: Scalars['String'];
 }>;
 
 
-export type CreatePostMutation = { __typename?: 'Mutation', createPost?: { __typename?: 'Post', id: string, date: string, text: string, stars: number, creator: { __typename?: 'CuteDev', id: string, username: string, imageUrl: string } } | null | undefined };
+export type CreatePostMutation = { __typename?: 'Mutation', createPost: { __typename?: 'CreatePostdevResponse', post?: { __typename?: 'Post', id: string, text: string, stars: number, date: string, creator: { __typename?: 'CuteDev', username: string, imageUrl: string } } | null | undefined, error?: { __typename?: 'OperationError', type: string, details: string } | null | undefined } };
 
 export type DeletePostMutationVariables = Exact<{
-  deletePostId: Scalars['String'];
+  postId: Scalars['String'];
 }>;
 
 
-export type DeletePostMutation = { __typename?: 'Mutation', deletePost: { __typename?: 'DeleteResponse', deleted: boolean, errors?: Array<{ __typename?: 'FieldError', field: string, message: string }> | null | undefined } };
+export type DeletePostMutation = { __typename?: 'Mutation', deletePost: { __typename?: 'DeleteResponse', deleted: boolean, error?: { __typename?: 'OperationError', type: string, details: string } | null | undefined } };
 
 export type EditCutedevMutationVariables = Exact<{
   input: EditCuteDevInput;
 }>;
 
 
-export type EditCutedevMutation = { __typename?: 'Mutation', editCutedevProfile: boolean };
+export type EditCutedevMutation = { __typename?: 'Mutation', editCutedevProfile: { __typename?: 'EditCutedevResponse', edited?: { __typename?: 'EditedCutedev', username?: string | null | undefined, bio?: string | null | undefined, imageUrl?: string | null | undefined, languages?: Array<string> | null | undefined, projects?: Array<string> | null | undefined } | null | undefined, error?: { __typename?: 'OperationError', type: string, details: string } | null | undefined } };
 
-export type LoginCutedevMutationVariables = Exact<{
-  password: Scalars['String'];
+export type LoginMutationVariables = Exact<{
   username: Scalars['String'];
+  password: Scalars['String'];
 }>;
 
 
-export type LoginCutedevMutation = { __typename?: 'Mutation', login: { __typename?: 'CuteDevResponse', cutedev?: { __typename?: 'CuteDev', id: string, username: string } | null | undefined, errors?: Array<{ __typename?: 'FieldError', field: string, message: string }> | null | undefined } };
+export type LoginMutation = { __typename?: 'Mutation', login: { __typename?: 'TokenResponse', accessToken?: string | null | undefined, error?: { __typename?: 'OperationError', type: string, details: string } | null | undefined } };
 
 export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
 
 
-export type LogoutMutation = { __typename?: 'Mutation', logout: boolean };
+export type LogoutMutation = { __typename?: 'Mutation', logout: { __typename?: 'LogoutResponse', success: boolean, error?: { __typename?: 'OperationError', type: string, details: string } | null | undefined } };
 
-export type RegisterCutedevMutationVariables = Exact<{
-  password: Scalars['String'];
+export type RegisterMutationVariables = Exact<{
   username: Scalars['String'];
+  password: Scalars['String'];
 }>;
 
 
-export type RegisterCutedevMutation = { __typename?: 'Mutation', registerCuteDev: { __typename?: 'CuteDevResponse', cutedev?: { __typename?: 'CuteDev', id: string, username: string, createdAt: string, updatedAt: string } | null | undefined, errors?: Array<{ __typename?: 'FieldError', field: string, message: string }> | null | undefined } };
+export type RegisterMutation = { __typename?: 'Mutation', registerCuteDev: { __typename?: 'TokenResponse', accessToken?: string | null | undefined, error?: { __typename?: 'OperationError', type: string, details: string } | null | undefined } };
 
-export type StartPostMutationVariables = Exact<{
+export type StarPostMutationVariables = Exact<{
   postId: Scalars['String'];
 }>;
 
 
-export type StartPostMutation = { __typename?: 'Mutation', starPost: { __typename?: 'StarPostResponse', stars?: number | null | undefined, error?: { __typename?: 'ErrorMessage', message: string } | null | undefined } };
+export type StarPostMutation = { __typename?: 'Mutation', starPost: { __typename?: 'StarPostResponse', stars?: number | null | undefined, error?: { __typename?: 'OperationError', type: string, details: string } | null | undefined } };
 
 export type AuthQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type AuthQuery = { __typename?: 'Query', me: { __typename?: 'AuthReponse', isAuth: boolean, userId: string } };
+export type AuthQuery = { __typename?: 'Query', me: { __typename?: 'AuthUserResponse', success: boolean, error?: { __typename?: 'OperationError', type: string, details: string } | null | undefined } };
 
-export type GetCuteDevPostsQueryVariables = Exact<{
-  input: PostsInput;
-}>;
-
-
-export type GetCuteDevPostsQuery = { __typename?: 'Query', posts: Array<{ __typename?: 'Post', id: string, stars: number, text: string, date: string }> };
-
-export type GetCuteDevProfileQueryVariables = Exact<{
+export type CutedevQueryVariables = Exact<{
   cuteDevId: Scalars['String'];
 }>;
 
 
-export type GetCuteDevProfileQuery = { __typename?: 'Query', cuteDev?: { __typename?: 'CuteDev', id: string, username: string, bio: string, imageUrl: string, languages: Array<string>, projects: Array<string> } | null | undefined };
+export type CutedevQuery = { __typename?: 'Query', cuteDev?: { __typename?: 'CuteDev', id: string, username: string, bio: string, imageUrl: string, languages: Array<string>, projects: Array<string> } | null | undefined };
 
-export type GetCutedevSessionQueryVariables = Exact<{
-  id: Scalars['String'];
-}>;
-
-
-export type GetCutedevSessionQuery = { __typename?: 'Query', cuteDev?: { __typename?: 'CuteDev', username: string, imageUrl: string } | null | undefined };
-
-export type GetPostsQueryVariables = Exact<{
+export type CutedevPostsQueryVariables = Exact<{
   input: PostsInput;
 }>;
 
 
-export type GetPostsQuery = { __typename?: 'Query', posts: Array<{ __typename?: 'Post', id: string, text: string, stars: number, date: string, creator: { __typename?: 'CuteDev', id: string, username: string, imageUrl: string } }> };
+export type CutedevPostsQuery = { __typename?: 'Query', posts: Array<{ __typename?: 'Post', id: string, stars: number, text: string, date: string }> };
+
+export type CutedevProfileQueryVariables = Exact<{
+  cutedevId: Scalars['String'];
+}>;
+
+
+export type CutedevProfileQuery = { __typename?: 'Query', cuteDev?: { __typename?: 'CuteDev', username: string, imageUrl: string } | null | undefined };
+
+export type PostsQueryVariables = Exact<{
+  input: PostsInput;
+}>;
+
+
+export type PostsQuery = { __typename?: 'Query', posts: Array<{ __typename?: 'Post', id: string, text: string, stars: number, date: string, creator: { __typename?: 'CuteDev', id: string, username: string, imageUrl: string } }> };
 
 
 export const CreatePostDocument = gql`
-    mutation CreatePost($input: CreatePostInput!) {
-  createPost(input: $input) {
-    id
-    date
-    text
-    stars
-    creator {
+    mutation CreatePost($text: String!) {
+  createPost(text: $text) {
+    post {
       id
-      username
-      imageUrl
+      text
+      stars
+      date
+      creator {
+        username
+        imageUrl
+      }
+    }
+    error {
+      type
+      details
     }
   }
 }
@@ -278,12 +296,12 @@ export function useCreatePostMutation() {
   return Urql.useMutation<CreatePostMutation, CreatePostMutationVariables>(CreatePostDocument);
 };
 export const DeletePostDocument = gql`
-    mutation DeletePost($deletePostId: String!) {
-  deletePost(id: $deletePostId) {
+    mutation DeletePost($postId: String!) {
+  deletePost(postId: $postId) {
     deleted
-    errors {
-      field
-      message
+    error {
+      type
+      details
     }
   }
 }
@@ -293,80 +311,95 @@ export function useDeletePostMutation() {
   return Urql.useMutation<DeletePostMutation, DeletePostMutationVariables>(DeletePostDocument);
 };
 export const EditCutedevDocument = gql`
-    mutation editCutedev($input: EditCuteDevInput!) {
-  editCutedevProfile(input: $input)
+    mutation EditCutedev($input: EditCuteDevInput!) {
+  editCutedevProfile(input: $input) {
+    edited {
+      username
+      bio
+      imageUrl
+      imageUrl
+      languages
+      projects
+    }
+    error {
+      type
+      details
+    }
+  }
 }
     `;
 
 export function useEditCutedevMutation() {
   return Urql.useMutation<EditCutedevMutation, EditCutedevMutationVariables>(EditCutedevDocument);
 };
-export const LoginCutedevDocument = gql`
-    mutation LoginCutedev($password: String!, $username: String!) {
-  login(password: $password, username: $username) {
-    cutedev {
-      id
-      username
-    }
-    errors {
-      field
-      message
+export const LoginDocument = gql`
+    mutation Login($username: String!, $password: String!) {
+  login(username: $username, password: $password) {
+    accessToken
+    error {
+      type
+      details
     }
   }
 }
     `;
 
-export function useLoginCutedevMutation() {
-  return Urql.useMutation<LoginCutedevMutation, LoginCutedevMutationVariables>(LoginCutedevDocument);
+export function useLoginMutation() {
+  return Urql.useMutation<LoginMutation, LoginMutationVariables>(LoginDocument);
 };
 export const LogoutDocument = gql`
     mutation Logout {
-  logout
+  logout {
+    success
+    error {
+      type
+      details
+    }
+  }
 }
     `;
 
 export function useLogoutMutation() {
   return Urql.useMutation<LogoutMutation, LogoutMutationVariables>(LogoutDocument);
 };
-export const RegisterCutedevDocument = gql`
-    mutation RegisterCutedev($password: String!, $username: String!) {
-  registerCuteDev(password: $password, username: $username) {
-    cutedev {
-      id
-      username
-      createdAt
-      updatedAt
-    }
-    errors {
-      field
-      message
+export const RegisterDocument = gql`
+    mutation Register($username: String!, $password: String!) {
+  registerCuteDev(username: $username, password: $password) {
+    accessToken
+    error {
+      type
+      details
     }
   }
 }
     `;
 
-export function useRegisterCutedevMutation() {
-  return Urql.useMutation<RegisterCutedevMutation, RegisterCutedevMutationVariables>(RegisterCutedevDocument);
+export function useRegisterMutation() {
+  return Urql.useMutation<RegisterMutation, RegisterMutationVariables>(RegisterDocument);
 };
-export const StartPostDocument = gql`
-    mutation StartPost($postId: String!) {
+export const StarPostDocument = gql`
+    mutation StarPost($postId: String!) {
   starPost(postId: $postId) {
     stars
     error {
-      message
+      type
+      details
     }
   }
 }
     `;
 
-export function useStartPostMutation() {
-  return Urql.useMutation<StartPostMutation, StartPostMutationVariables>(StartPostDocument);
+export function useStarPostMutation() {
+  return Urql.useMutation<StarPostMutation, StarPostMutationVariables>(StarPostDocument);
 };
 export const AuthDocument = gql`
     query Auth {
   me {
-    isAuth
-    userId
+    success
+    error {
+      type
+      details
+    }
   }
 }
     `;
@@ -374,22 +407,8 @@ export const AuthDocument = gql`
 export function useAuthQuery(options: Omit<Urql.UseQueryArgs<AuthQueryVariables>, 'query'> = {}) {
   return Urql.useQuery<AuthQuery>({ query: AuthDocument, ...options });
 };
-export const GetCuteDevPostsDocument = gql`
-    query GetCuteDevPosts($input: PostsInput!) {
-  posts(input: $input) {
-    id
-    stars
-    text
-    date
-  }
-}
-    `;
-
-export function useGetCuteDevPostsQuery(options: Omit<Urql.UseQueryArgs<GetCuteDevPostsQueryVariables>, 'query'> = {}) {
-  return Urql.useQuery<GetCuteDevPostsQuery>({ query: GetCuteDevPostsDocument, ...options });
-};
-export const GetCuteDevProfileDocument = gql`
-    query GetCuteDevProfile($cuteDevId: String!) {
+export const CutedevDocument = gql`
+    query Cutedev($cuteDevId: String!) {
   cuteDev(id: $cuteDevId) {
     id
     username
@@ -401,23 +420,37 @@ export const GetCuteDevProfileDocument = gql`
 }
     `;
 
-export function useGetCuteDevProfileQuery(options: Omit<Urql.UseQueryArgs<GetCuteDevProfileQueryVariables>, 'query'> = {}) {
-  return Urql.useQuery<GetCuteDevProfileQuery>({ query: GetCuteDevProfileDocument, ...options });
+export function useCutedevQuery(options: Omit<Urql.UseQueryArgs<CutedevQueryVariables>, 'query'> = {}) {
+  return Urql.useQuery<CutedevQuery>({ query: CutedevDocument, ...options });
 };
-export const GetCutedevSessionDocument = gql`
-    query getCutedevSession($id: String!) {
-  cuteDev(id: $id) {
+export const CutedevPostsDocument = gql`
+    query CutedevPosts($input: PostsInput!) {
+  posts(input: $input) {
+    id
+    stars
+    text
+    date
+  }
+}
+    `;
+
+export function useCutedevPostsQuery(options: Omit<Urql.UseQueryArgs<CutedevPostsQueryVariables>, 'query'> = {}) {
+  return Urql.useQuery<CutedevPostsQuery>({ query: CutedevPostsDocument, ...options });
+};
+export const CutedevProfileDocument = gql`
+    query CutedevProfile($cutedevId: String!) {
+  cuteDev(id: $cutedevId) {
     username
     imageUrl
   }
 }
     `;
 
-export function useGetCutedevSessionQuery(options: Omit<Urql.UseQueryArgs<GetCutedevSessionQueryVariables>, 'query'> = {}) {
-  return Urql.useQuery<GetCutedevSessionQuery>({ query: GetCutedevSessionDocument, ...options });
+export function useCutedevProfileQuery(options: Omit<Urql.UseQueryArgs<CutedevProfileQueryVariables>, 'query'> = {}) {
+  return Urql.useQuery<CutedevProfileQuery>({ query: CutedevProfileDocument, ...options });
 };
-export const GetPostsDocument = gql`
-    query GetPosts($input: PostsInput!) {
+export const PostsDocument = gql`
+    query Posts($input: PostsInput!) {
   posts(input: $input) {
     id
     text
@@ -432,6 +465,6 @@ export const GetPostsDocument = gql`
 }
     `;
 
-export function useGetPostsQuery(options: Omit<Urql.UseQueryArgs<GetPostsQueryVariables>, 'query'> = {}) {
-  return Urql.useQuery<GetPostsQuery>({ query: GetPostsDocument, ...options });
+export function usePostsQuery(options: Omit<Urql.UseQueryArgs<PostsQueryVariables>, 'query'> = {}) {
+  return Urql.useQuery<PostsQuery>({ query: PostsDocument, ...options });
 };

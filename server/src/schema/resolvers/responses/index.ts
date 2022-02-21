@@ -1,45 +1,51 @@
-import { ObjectType, Field, Int } from "type-graphql";
-import { CuteDev } from "../../entities/CuteDev";
+import { Post } from "../../../schema/entities/Post";
+import { ObjectType, Field, Int, ID } from "type-graphql";
 
 @ObjectType()
-export class AuthReponse {
+export class OperationError {
+  constructor(type: string, details: string) {
+    this.type = type;
+    this.details = details;
+  }
   @Field()
-  isAuth: boolean;
+  type: string;
   @Field()
-  userId: string;
+  details: string;
 }
 
 @ObjectType()
-export class FieldError {
-  @Field()
-  field: string;
+export class AuthUserResponse {
+  @Field(() => Boolean)
+  success: boolean;
 
-  @Field()
-  message: string;
+  @Field(() => OperationError, { nullable: true })
+  error?: OperationError;
 }
 
 @ObjectType()
-export class ErrorMessage {
-  @Field()
-  message: string;
+export class TokenResponse {
+  @Field(() => String, { nullable: true })
+  accessToken?: string;
+
+  @Field(() => OperationError, { nullable: true })
+  error?: OperationError;
 }
 
 @ObjectType()
-export class CuteDevResponse {
-  @Field(() => [FieldError], { nullable: true })
-  errors?: FieldError[];
-
-  @Field(() => CuteDev, { nullable: true })
-  cutedev?: CuteDev;
+export class LogoutResponse {
+  @Field(() => Boolean)
+  success?: boolean;
+  @Field(() => OperationError, { nullable: true })
+  error?: OperationError;
 }
 
 @ObjectType()
 export class DeleteResponse {
-  @Field(() => [FieldError], { nullable: true })
-  errors?: FieldError[];
-
   @Field(() => Boolean)
   deleted: boolean;
+
+  @Field(() => OperationError, { nullable: true })
+  error?: OperationError;
 }
 
 @ObjectType()
@@ -47,6 +53,45 @@ export class StarPostResponse {
   @Field(() => Int, { nullable: true })
   stars?: number;
 
-  @Field(() => ErrorMessage, { nullable: true })
-  error?: ErrorMessage;
+  @Field(() => OperationError, { nullable: true })
+  error?: OperationError;
+}
+
+@ObjectType()
+export class CreatePostdevResponse {
+  @Field(() => Post, { nullable: true })
+  post?: Post;
+
+  @Field(() => OperationError, { nullable: true })
+  error?: OperationError;
+}
+
+@ObjectType()
+class EditedCutedev {
+  @Field(() => ID)
+  id!: string;
+
+  @Field(() => String, { nullable: true })
+  username: string;
+
+  @Field(() => String, { nullable: true })
+  bio: string;
+
+  @Field(() => String, { nullable: true })
+  imageUrl: string;
+
+  @Field(() => [String], { nullable: true })
+  projects: string[];
+
+  @Field(() => [String], { nullable: true })
+  languages: string[];
+}
+
+@ObjectType()
+export class EditCutedevResponse {
+  @Field(() => EditedCutedev, { nullable: true })
+  edited?: EditedCutedev;
+
+  @Field(() => OperationError, { nullable: true })
+  error?: OperationError;
 }

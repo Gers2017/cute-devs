@@ -1,9 +1,9 @@
-mutation DeletePost($deletePostId: String!) {
-  deletePost(id: $deletePostId) {
+mutation DeletePost($postId: String!) {
+  deletePost(postId: $postId) {
     deleted
-    errors {
-      field
-      message
+    error {
+      type
+      details
     }
   }
 }

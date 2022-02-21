@@ -1,8 +1,8 @@
-import { useGetPostsQuery } from "@generated";
+import { usePostsQuery } from "@generated";
 import Post from "@modules/post";
 
 export default function Home() {
-  const [result, reexecuteQuery] = useGetPostsQuery({
+  const [result, reexecuteQuery] = usePostsQuery({
     variables: { input: { take: 10, creatorId: null, reverse: true } },
   });
 

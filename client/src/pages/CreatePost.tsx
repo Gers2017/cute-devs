@@ -10,10 +10,7 @@ export default function CreatePost() {
     e.preventDefault();
     try {
       const { data } = await createPost({
-        input: {
-          creatorId: "1",
-          text: textAreaValue,
-        },
+        text: textAreaValue,
       });
       setTextAreaValue("");
     } catch (e) {

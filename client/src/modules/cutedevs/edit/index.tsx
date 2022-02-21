@@ -55,7 +55,6 @@ export default function EditCutedev({
     try {
       const { data } = await editMutation({
         input: {
-          id: cuteDev.id,
           imageUrl: imageUrl.value,
           username: username.value,
           bio: bio.value,
@@ -90,7 +89,6 @@ export default function EditCutedev({
             onBlur={handleInputBlur}
           />
         </Fieldset>
-
         <Fieldset
           column
           gap="gap-2"

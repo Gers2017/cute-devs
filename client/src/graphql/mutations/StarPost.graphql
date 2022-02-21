@@ -1,8 +1,9 @@
-mutation StartPost($postId: String!) {
+mutation StarPost($postId: String!) {
   starPost(postId: $postId) {
     stars
     error {
-      message
+      type
+      details
     }
   }
 }

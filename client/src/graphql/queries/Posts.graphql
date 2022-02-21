@@ -1,4 +1,4 @@
-query GetPosts($input: PostsInput!) {
+query Posts($input: PostsInput!) {
   posts(input: $input) {
     id
     text

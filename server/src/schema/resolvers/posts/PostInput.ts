@@ -19,7 +19,4 @@ export class PostsInput {
 export class CreatePostInput {
   @Field()
   text!: string;
-
-  @Field((type) => ID)
-  creatorId!: number;
 }
