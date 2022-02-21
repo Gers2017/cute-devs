@@ -10,7 +10,7 @@ export async function createNewCutedev(username: string, password: string) {
   const salt = await genSalt();
   const hashedPassword = await hash(password, salt);
 
-  return CuteDev.create({
+  const newCutedev = CuteDev.create({
     username,
     password: hashedPassword,
     imageUrl: `https://avatars.dicebear.com/api/micah/${avatarKey}.svg`,
@@ -18,6 +18,9 @@ export async function createNewCutedev(username: string, password: string) {
     projects: [],
     posts: [],
   });
+
+  const { identifiers } = await CuteDev.insert(newCutedev);
+  return await CuteDev.findOne(identifiers[0].id);
 }
 
 export async function setCutedevSessionId(cutedev: CuteDev, sessionId: string) {

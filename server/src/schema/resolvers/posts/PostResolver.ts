@@ -1,7 +1,6 @@
-import { CuteDev } from "../../entities/CuteDev";
 import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
 import { Post } from "../../entities/Post";
-import { CreatePostInput, PostsInput } from "./PostInput";
+import { PostsInput } from "./PostInput";
 import {
   CreatePostdevResponse,
   DeleteResponse,
@@ -10,11 +9,7 @@ import {
 } from "../responses";
 import { MyContext } from "../../../types/context";
 import { AuthUser } from "../auth";
-
-async function getPostById(id: string, withCreator?: boolean) {
-  let options = withCreator ? { relations: ["creator"] } : undefined;
-  return await Post.findOne(id, options);
-}
+import { createPost, getPostById } from "../functions/post";
 
 @Resolver(Post)
 export class PostResolver {
@@ -89,14 +84,7 @@ export class PostResolver {
       };
 
     try {
-      const newPost = Post.create({
-        text,
-        creator,
-        stars: 0,
-      });
-      const { identifiers } = await Post.insert(newPost);
-
-      const post = await getPostById(identifiers[0].id, true);
+      const post = await createPost(text, creator);
 
       if (!post) {
         return {

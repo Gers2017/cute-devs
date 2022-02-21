@@ -7,7 +7,7 @@ import CreatePost from "@pages/CreatePost";
 import Login from "@pages/Login";
 import LoginProvider, { useLogin } from "./context/authContext";
 import { Provider } from "urql";
-import { urqlClient } from "./urlq/client";
+import { urqlClient } from "./urql/client";
 import { useAuthQuery } from "@generated";
 
 function App() {

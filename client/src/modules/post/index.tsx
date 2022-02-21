@@ -1,8 +1,6 @@
-import React from "react";
 import Post from "@customTypes/Post";
 import { Link } from "react-router-dom";
-import Button from "@modules/button";
-import Star from "@modules/icons/Star";
+import StarButtton from "@modules/starbutton";
 interface PostProps {
   post: Post;
 }
@@ -27,10 +25,7 @@ export default function index({ post }: PostProps) {
         <p>{post.text}</p>
       </section>
       <footer className="flex justify-start">
-        <Button>
-          <Star />
-          <span>{post.stars}</span>
-        </Button>
+        <StarButtton postId={post.id} stars={post.stars} />
       </footer>
     </div>
   );

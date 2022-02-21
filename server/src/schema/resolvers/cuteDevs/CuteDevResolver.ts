@@ -69,10 +69,7 @@ export class CuteDevResolver {
     @Arg("password") password: string,
   ): Promise<TokenResponse> {
     try {
-      const newCuteDev = await createNewCutedev(username, password);
-      const { identifiers } = await CuteDev.insert(newCuteDev);
-      const cutedev = await CuteDev.findOne(identifiers[0].id);
-
+      const cutedev = await createNewCutedev(username, password);
       if (!cutedev) {
         return {
           error: new OperationError(

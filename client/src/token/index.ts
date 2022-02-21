@@ -1,6 +1,8 @@
 import { AccessTokenPayload } from "@customTypes/token";
 import jwt from "jwt-decode";
-const AUTH_TOKEN = "accessToken";
+const AUTH_TOKEN =
+  (import.meta.env.VITE_TOKEN_NAME as string | undefined) || "accessToken";
+
 export const getToken = () => localStorage.getItem(AUTH_TOKEN);
 export const setToken = (token: string) =>
   localStorage.setItem(AUTH_TOKEN, token);

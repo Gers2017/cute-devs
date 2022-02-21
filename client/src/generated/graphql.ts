@@ -317,7 +317,6 @@ export const EditCutedevDocument = gql`
       username
       bio
       imageUrl
-      imageUrl
       languages
       projects
     }

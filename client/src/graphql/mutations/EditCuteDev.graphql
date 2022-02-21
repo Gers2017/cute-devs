@@ -4,7 +4,6 @@ mutation EditCutedev($input: EditCuteDevInput!) {
       username
       bio
       imageUrl
-      imageUrl
       languages
       projects
     }

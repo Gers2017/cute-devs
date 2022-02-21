@@ -1,3 +1,5 @@
+import { ConnectionOptions } from "typeorm";
+
 export type Result<T> =
   | {
       result: T;
@@ -7,3 +9,9 @@ export type Result<T> =
       result?: null | undefined;
       error: Error;
     };
+
+export type ServerOptions = {
+  port: number | string;
+  credentials: boolean;
+  ormConfig: ConnectionOptions;
+};
