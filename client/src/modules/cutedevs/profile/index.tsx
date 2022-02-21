@@ -1,14 +1,21 @@
-import React from 'react'
-import { useLogin } from "@context/loginContext";
+import React from "react";
+import { useLogin } from "@context/authContext";
 import Button from "@modules/button";
-import CutedevProfileProps from "@customTypes/CutedevProfile"
+import CutedevProfileProps from "@customTypes/CutedevProfile";
+import { getTokenPayload } from "../../../token";
 
-export default function CutedevProfile({ cuteDev, setIsEditing }: CutedevProfileProps) {
-  const { userId, isLogin } = useLogin();
+export default function CutedevProfile({
+  cuteDev,
+  setIsEditing,
+}: CutedevProfileProps) {
+  const { isLogged } = useLogin();
   const { id, username, bio, languages, projects } = cuteDev;
+  const payload = getTokenPayload();
+
+  const allowEditing = payload && payload.id == id && isLogged;
 
   function enableEditing() {
-    setIsEditing(true)
+    setIsEditing(true);
   }
 
   return (
@@ -22,8 +29,7 @@ export default function CutedevProfile({ cuteDev, setIsEditing }: CutedevProfile
           languages.map((language) => (
             <li
               key={language}
-              className="flex justify-center items-center text-sm uppercase py-1 px-2 rounded-lg border border-gray-50"
-            >
+              className="flex justify-center items-center text-sm uppercase py-1 px-2 rounded-lg border border-gray-50">
               {language}
             </li>
           ))}
@@ -36,8 +42,7 @@ export default function CutedevProfile({ cuteDev, setIsEditing }: CutedevProfile
             projects.map((project) => (
               <li
                 key={project}
-                className="inline-flex justify-center items-center text-sm uppercase py-1 px-2 rounded-lg border border-gray-50"
-              >
+                className="inline-flex justify-center items-center text-sm uppercase py-1 px-2 rounded-lg border border-gray-50">
                 {project}
               </li>
             ))
@@ -46,7 +51,11 @@ export default function CutedevProfile({ cuteDev, setIsEditing }: CutedevProfile
           )}
         </section>
       </details>
-      {(isLogin && userId === id) && (<Button fullwidth onClick={enableEditing}>Edit profile</Button>)}
+      {allowEditing && (
+        <Button fullwidth onClick={enableEditing}>
+          Edit profile
+        </Button>
+      )}
     </div>
-  )
+  );
 }

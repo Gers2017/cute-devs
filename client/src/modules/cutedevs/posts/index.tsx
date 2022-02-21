@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from "react";
-import { useGetCuteDevPostsQuery } from "@generated";
+import { useMemo, useState } from "react";
+import { useCutedevPostsQuery } from "@generated";
 import FlexColumn from "@modules/layout/FlexColumn";
 import Post from "@modules/post";
 import { ArrowRight, ArrowLeft } from "@modules/icons/arrows";
@@ -24,7 +24,7 @@ export default function CuteDevPosts({ cuteDev }: CuteDevPostsProps) {
 
   const [skip, setSkip] = useState(0);
 
-  const [result, _] = useGetCuteDevPostsQuery({
+  const [result, _] = useCutedevPostsQuery({
     variables: {
       input: {
         creatorId: cuteDev.id,
@@ -50,26 +50,22 @@ export default function CuteDevPosts({ cuteDev }: CuteDevPostsProps) {
   return (
     <section className="col-span-2 py-2 px-8 flex flex-col justify-start gap-4">
       <FlexColumn>
-        {
-          posts.length > 0 &&
+        {posts.length > 0 &&
           posts.map((post) => (
             <Post key={post.id} post={{ ...post, creator: cuteDev }} />
-          ))
-        }
+          ))}
       </FlexColumn>
       <div className="flex justify-center items-center gap-2">
         <button
           className="flex justify-start items-center gap-2 border border-gray-700 py-1 px-2 rounded-l bg-gray-800 disabled:opacity-50 disabled:cursor-default"
           disabled={!(skip > 0)}
-          onClick={previous}
-        >
+          onClick={previous}>
           <ArrowLeft /> Previous
         </button>
         <button
           className="flex justify-start items-center gap-2 border border-gray-700 py-1 px-2 rounded-r bg-gray-800 disabled:opacity-50 disabled:cursor-default"
           disabled={!(originalPosts.length === TAKE)}
-          onClick={next}
-        >
+          onClick={next}>
           <ArrowRight /> Next
         </button>
       </div>

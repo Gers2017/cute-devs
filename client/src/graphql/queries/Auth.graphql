@@ -1,6 +1,9 @@
 query Auth {
   me {
-    isAuth
-    userId
+    success
+    error {
+      type
+      details
+    }
   }
 }

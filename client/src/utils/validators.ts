@@ -4,8 +4,11 @@ export const MAX_USERNAME_LENGTH = 20;
 export const MIN_PASSWORD_LENGTH = 8;
 export const MAX_PASSWORD_LENGTH = 28;
 
-export const MAX_BIO_LENGTH = 25;
-export const MIN_BIO_LENGTH = 10;
+export const MAX_BIO_LENGTH = 60;
+export const MIN_BIO_LENGTH = 1;
+
+export const MAX_LANGUAGES_LENGTH = 10;
+export const MAX_SINGLE_LANGUAGE_LENGTH = 16;
 
 export function usernameValidator(value: string): string[] {
   let errors = [];
@@ -39,9 +42,47 @@ export function passwordValidator(value: string): string[] {
 
 export function bioValidator(bio: string): string[] {
   let errors = [];
-  if (bio.length < MIN_BIO_LENGTH)
-    errors.push(`Bio cannot be less than ${MIN_BIO_LENGTH} characters`);
+  if (bio.length < MIN_BIO_LENGTH) errors.push(`Bio cannot be empty`);
   if (bio.length > MAX_BIO_LENGTH)
     errors.push(`Bio cannot be longer than ${MAX_BIO_LENGTH} characters`);
+  return errors;
+}
+
+export function languagesValidator(languages: string): string[] {
+  let errors = [];
+  let languagesArray = languages.split(",").map((lang) => lang.trim());
+
+  for (let j = 0; j < languagesArray.length; j++) {
+    const language = languagesArray[j];
+    if (language.length > MAX_SINGLE_LANGUAGE_LENGTH) {
+      errors.push(
+        `A language may not exceed ${MAX_SINGLE_LANGUAGE_LENGTH} characters`,
+      );
+      break;
+    }
+  }
+
+  if (languagesArray.length > MAX_LANGUAGES_LENGTH) {
+    errors.push(`Cannot have more than ${MAX_LANGUAGES_LENGTH} languages`);
+  }
+
+  return errors;
+}
+
+export function imageUrlValidator(imageUrl: string): string[] {
+  let errors = [];
+  const githubRegex = new RegExp(
+    /(https):(\/\/avatars.githubusercontent.com\/u\/\d+\?v=4)/gi,
+  );
+  const dicebearRegex = new RegExp(
+    /(https):(\/\/avatars.dicebear.com\/api\/[a-z-]+\/)\w+(.svg)/gi,
+  );
+
+  if (!githubRegex.test(imageUrl) && !dicebearRegex.test(imageUrl)) {
+    errors.push(
+      `Make sure the image url is a valid twitter/github/dicebear profile picture url`,
+    );
+  }
+
   return errors;
 }

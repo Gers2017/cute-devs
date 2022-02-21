@@ -2,22 +2,30 @@ import React from "react";
 import { useHistory, Link } from "react-router-dom";
 import CutedevIcon from "@icons/cutedevs";
 import Button from "@modules/button";
-import { useLogin } from "@context/loginContext";
-import { useGetCutedevSessionQuery } from "@generated"
+import { useLogin } from "@context/authContext";
+import { useCutedevProfileQuery, useLogoutMutation } from "@generated";
+import { deleteToken, getTokenPayload } from "../../token";
 
 export default function Navbar() {
-  const { isLogin, userId, logout } = useLogin();
+  const { isLogged, setIsLogged } = useLogin();
   const { push } = useHistory();
+  const payload = getTokenPayload();
 
-  const [result, _reexecute] = useGetCutedevSessionQuery({ variables: { id: userId } });
-  const { data } = result;
+  const [cutedevProfile, _reexecuteCutedevProfile] = useCutedevProfileQuery({
+    variables: { cutedevId: payload?.id.toString() || "" },
+    pause: payload === null,
+  });
+  const [_updateLoguut, logoutMutation] = useLogoutMutation();
 
-  let username = "";
-  let imageUrl = "";
+  const cuteDev = cutedevProfile.data?.cuteDev;
+  const isUserLogged = isLogged && payload;
 
-  if (data?.cuteDev) {
-    username = data.cuteDev.username;
-    imageUrl = data.cuteDev.imageUrl;
+  async function logout() {
+    const { data } = await logoutMutation();
+    if (data?.logout.success) {
+      deleteToken();
+      setIsLogged(false);
+    }
   }
 
   return (
@@ -30,26 +38,35 @@ export default function Navbar() {
       </Link>
       <nav className="w-max">
         <ul className="flex justify-center items-center gap-4">
-          {!isLogin ? (
+          {isUserLogged ? (
             <>
-              <li>
-                <a href="/user/login">Login</a>
-              </li>
-              <li>
-                <a href="/user/create">Signup</a>
-              </li>
+              <Link
+                className="inline-flex justify-start items-center gap-2font-bold"
+                to={`/devs/${payload.id}`}>
+                <img
+                  src={cuteDev?.imageUrl}
+                  alt={`Profile picture of ${cuteDev?.username}`}
+                  className="rounded-full w-10 h-10"
+                />
+                <p>{cuteDev?.username}</p>
+              </Link>
+              <Button fullwidth={false} onClick={logout}>
+                Logout
+              </Button>
+              <Button
+                primary
+                fullwidth={false}
+                onClick={() => {
+                  push("/posts/");
+                }}>
+                Create new post
+              </Button>
             </>
           ) : (
             <>
-              {/* TODO: add a menu to logout, setting, check profile, projects */}
-              <Link className="inline-flex justify-start items-center gap-2font-bold" to={`/devs/${userId}`}>
-                <img src={imageUrl} alt={username} className="rounded-full w-10 h-10" />
-                <p>{username}</p>
-              </Link>
-              <Button fullwidth={false} onClick={() => logout()}>Logut</Button>
-              <Button primary fullwidth={false} onClick={() => { push("/posts/"); }}>
-                Create new post
-              </Button>
+              <li>
+                <a href="/user/login">Account</a>
+              </li>
             </>
           )}
         </ul>

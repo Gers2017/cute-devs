@@ -1,10 +1,15 @@
-mutation EditCuteDev($input: EditCuteDevInput!) {
-  editCuteDev(input: $input) {
-    id
-    username
-    bio
-    imageUrl
-    languages
-    projects
+mutation EditCutedev($input: EditCuteDevInput!) {
+  editCutedevProfile(input: $input) {
+    edited {
+      username
+      bio
+      imageUrl
+      languages
+      projects
+    }
+    error {
+      type
+      details
+    }
   }
 }

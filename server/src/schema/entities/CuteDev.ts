@@ -16,6 +16,9 @@ export class CuteDev extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: string;
 
+  @Column("varchar", { default: "" })
+  sessionId!: string;
+
   @Field()
   @Column("varchar", {
     length: 120,

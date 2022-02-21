@@ -17,3 +17,16 @@ image {
 select {
   @apply my-3 outline-none p-1 bg-gray-700 text-gray-50 font-bold rounded text-base;
 }
+
+button {
+  @apply flex justify-center items-center gap-2 rounded-md font-semibold py-1 px-3 transition-colors duration-150 ease-in
+  border border-transparent disabled:opacity-50;
+}
+
+input {
+  @apply flex items-center py-1 px-2 rounded-md bg-gray-700 text-gray-50;
+}
+
+textarea {
+  @apply py-1 px-2 rounded-md bg-gray-700 text-gray-50;
+}

@@ -25,6 +25,6 @@
     "checkJs": true,
     "baseUrl": "./"
   },
-  "include": ["./src", "tests/**/*.ts"],
-  "exclude": ["node_modules", "src/**/*.test.ts"]
+  "include": ["./src/**/*.ts", "./tests/**/*.ts"],
+  "exclude": ["node_modules"]
 }

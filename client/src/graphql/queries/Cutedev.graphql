@@ -1,4 +1,4 @@
-query GetCuteDevProfile($cuteDevId: String!) {
+query Cutedev($cuteDevId: String!) {
   cuteDev(id: $cuteDevId) {
     id
     username

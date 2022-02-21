@@ -1,60 +1,130 @@
 import { CuteDev } from "../../entities/CuteDev";
-import { AuthReponse, CuteDevResponse, DeleteResponse } from "../responses";
 import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
-import { MyContext } from "src/types/MyContext";
-import { hash, compare } from "bcrypt";
+import { MyContext } from "../../../types/context";
+import { AuthUser } from "../auth";
 import {
-  setJidCookie,
-  setRefreshToken,
-  tryToGetTokens,
-  clearTokens,
-} from "../../../functions/token";
+  generateAccessToken,
+  generateSessionId,
+  refreshSessionId,
+} from "../functions/token";
+
 import {
-  CuteDevsInput,
-  EditBio,
-  EditCuteDevInput,
-  EditLanguages,
-} from "./CuteDevInput";
+  isValidPassword,
+  setCutedevSessionId,
+  createNewCutedev,
+  isValidCutedevImageUrl,
+} from "../functions/cutedev";
 
-async function findCutedevById(id: string) {
-  return (await CuteDev.findOne(id)) || null;
-}
+import { CuteDevsInput, EditCuteDevInput } from "./CuteDevInput";
 
+import {
+  TokenResponse,
+  DeleteResponse,
+  LogoutResponse,
+  OperationError,
+  AuthUserResponse,
+  EditCutedevResponse,
+} from "../responses";
 @Resolver(CuteDev)
 export class CuteDevResolver {
-  @Query(() => AuthReponse)
-  async me(@Ctx() { req, res }: MyContext): Promise<AuthReponse> {
+  @Query(() => AuthUserResponse)
+  async me(@Ctx() { req }: MyContext): Promise<AuthUserResponse> {
+    const { payload, error } = await AuthUser(req);
+    if (payload) return { success: true };
+    return { success: false, error };
+  }
+
+  @Mutation(() => TokenResponse)
+  async login(
+    @Arg("username") username: string,
+    @Arg("password") password: string,
+  ): Promise<TokenResponse> {
+    const cuteDev = await CuteDev.findOne({ where: { username } });
+    if (!cuteDev) {
+      return {
+        error: new OperationError("username", "No such a user"),
+      };
+    }
+
+    // compare password with hashed password
+    if (!(await isValidPassword(password, cuteDev.password))) {
+      return {
+        error: new OperationError("password", "Incorrect password"),
+      };
+    }
+
+    let sessionId = generateSessionId();
+    const accessToken = generateAccessToken({ id: cuteDev.id, sessionId });
+
+    setCutedevSessionId(cuteDev, sessionId);
+
+    return {
+      accessToken,
+    };
+  }
+
+  @Mutation(() => TokenResponse)
+  async registerCuteDev(
+    @Arg("username") username: string,
+    @Arg("password") password: string,
+  ): Promise<TokenResponse> {
     try {
-      const { jidPayload, refreshPayload } = tryToGetTokens(req, res);
-
-      let userId = "";
-
-      if (jidPayload) userId = jidPayload.userId;
-      else if (refreshPayload) userId = refreshPayload.userId;
+      const cutedev = await createNewCutedev(username, password);
+      if (!cutedev) {
+        return {
+          error: new OperationError(
+            "register cutedev",
+            "Error at registering cutedev",
+          ),
+        };
+      }
+      const accessToken = generateAccessToken({
+        id: cutedev.id,
+        sessionId: generateSessionId(),
+      });
 
       return {
-        isAuth: !!jidPayload || !!refreshPayload,
-        userId: userId,
+        accessToken,
       };
     } catch (e) {
+      console.error(e);
       return {
-        isAuth: false,
-        userId: "",
+        error: new OperationError("username", "Username already taken"),
       };
     }
   }
 
-  @Mutation(() => Boolean)
-  async logout(@Ctx() { req, res }: MyContext) {
+  @Mutation(() => LogoutResponse)
+  async logout(@Ctx() { req }: MyContext): Promise<LogoutResponse> {
+    const { error, cutedev } = await AuthUser(req);
+    if (!cutedev) return { error };
+
     try {
-      const { jidPayload, refreshPayload } = tryToGetTokens(req, res);
-      if (jidPayload || refreshPayload) {
-        clearTokens(res);
-        return true;
-      }
-      return false;
+      await refreshSessionId(cutedev);
+      return { success: true };
     } catch (e) {
-      return false;
+      console.error(e);
+      return {
+        success: false,
+        error: new OperationError("payload", "Error at generating new session"),
+      };
+    }
+  }
+
+  @Mutation(() => AuthUserResponse)
+  async refresh(@Ctx() { req }: MyContext): Promise<TokenResponse> {
+    const { error, cutedev } = await AuthUser(req);
+    if (!cutedev) return { error };
+
+    try {
+      let sessionId = await refreshSessionId(cutedev);
+      const accessToken = generateAccessToken({ id: cutedev.id, sessionId });
+      return { accessToken };
+    } catch (e) {
+      console.error(e);
+      return {
+        error: new OperationError("payload", "Error at generating new session"),
+      };
     }
   }
 
@@ -71,7 +141,7 @@ export class CuteDevResolver {
     }
   }
 
-  @Query((returns) => [CuteDev])
+  @Query(() => [CuteDev])
   async cuteDevs(@Arg("input") { limit }: CuteDevsInput) {
     try {
       if (limit < 0) return [];
@@ -84,141 +154,57 @@ export class CuteDevResolver {
     }
   }
 
-  // TODO: add register validation
-  @Mutation((returns) => CuteDevResponse)
-  async registerCuteDev(
-    @Arg("username") username: string,
-    @Arg("password") password: string,
-    @Ctx() { res }: MyContext,
-  ): Promise<CuteDevResponse> {
-    try {
-      const usernameKey = username.toLocaleLowerCase().replace(/[\W]/gm, "_");
-      const hashedPassword = await hash(password, 5);
+  @Mutation(() => EditCutedevResponse)
+  async editCutedevProfile(
+    @Ctx() { req }: MyContext,
+    @Arg("input") { username, bio, languages, imageUrl }: EditCuteDevInput,
+  ): Promise<EditCutedevResponse> {
+    const { cutedev, error } = await AuthUser(req);
+    if (!cutedev) return { error };
 
-      const newCuteDev = CuteDev.create({
-        username,
-        password: hashedPassword,
-        imageUrl: `https://avatars.dicebear.com/api/micah/${usernameKey}.svg`,
-        languages: [],
-        projects: [],
-        posts: [],
-      });
+    if (username && username.length > 0) cutedev.username = username;
+    if (bio && bio.length > 0) cutedev.bio = bio;
 
-      const { identifiers } = await CuteDev.insert(newCuteDev);
-      const userId = identifiers[0].id;
-
-      setJidCookie(res, { userId });
-      setRefreshToken(res, { userId, sessionId: 1 });
-
-      return {
-        cuteDev: newCuteDev,
-      };
-    } catch (e) {
-      console.error(e);
-      return {
-        errors: [{ field: "username", message: "Username already taken" }],
-      };
+    if (imageUrl && imageUrl.length > 0 && isValidCutedevImageUrl(imageUrl)) {
+      cutedev.imageUrl = imageUrl;
     }
-  }
 
-  // ==> Login resolver
-  @Mutation(() => CuteDevResponse)
-  async login(
-    @Arg("username") username: string,
-    @Arg("password") password: string,
-    @Ctx() { res }: MyContext,
-  ): Promise<CuteDevResponse> {
-    const cuteDev = await CuteDev.findOne({ where: { username } });
-    if (!cuteDev) {
-      return {
-        errors: [{ field: "username", message: "Username doesn't exists" }],
-      };
+    if (languages && languages.length > 0) {
+      cutedev.languages = languages.map((s) => s.toLowerCase());
     }
-    try {
-      const isValid = await compare(password, cuteDev.password);
 
-      if (!isValid) {
-        return {
-          errors: [{ field: "password", message: "Incorrect password" }],
-        };
-      }
+    try {
+      await cutedev.save();
     } catch (e) {
       return {
-        errors: [
-          { field: "password", message: "Error at validating the password" },
-        ],
+        error: new OperationError("edit cutedev", "Unauthorized operation"),
       };
     }
-    setJidCookie(res, { userId: cuteDev.id });
-    setRefreshToken(res, {
-      userId: cuteDev.id,
-      sessionId: 1,
-    });
 
     return {
-      cuteDev,
+      edited: cutedev,
     };
   }
-  /*
-    TODO: investigate typegraphql, private or auth endpoints to add authentication to editcutedev
-  */
-  @Mutation(() => CuteDev, { nullable: true })
-  async editCuteDev(@Arg("input") { id, editInput }: EditCuteDevInput) {
-    const cutedev = await CuteDev.findOne(id);
-    if (!cutedev) {
-      return null;
-    }
-    const result = await CuteDev.createQueryBuilder()
-      .update()
-      .set({ ...editInput })
-      .where("id = :id", { id })
-      .returning("*")
-      .execute();
 
-    return result.raw[0];
-  }
-
-  @Mutation(() => Boolean)
-  async editBio(@Arg("input") { id, bio }: EditBio) {
-    const cutedev = await CuteDev.findOne(id);
-    if (!cutedev) return false;
-    cutedev.bio = bio;
-    await cutedev.save();
-    return true;
-  }
-
-  @Mutation(() => Boolean)
-  async editLanguages(@Arg("inut") { id, languages }: EditLanguages) {
-    const cuteDev = await findCutedevById(id);
-    if (!cuteDev) return false;
-    cuteDev.languages = languages;
-    await cuteDev.save();
-    return true;
-  }
-
-  // TODO: add authentication for delete cutedev
   @Mutation(() => DeleteResponse)
-  async deleteCuteDev(@Arg("id") id: string): Promise<DeleteResponse> {
-    const cuteDevToDelete = await CuteDev.findOne(id);
-    if (!cuteDevToDelete) {
-      return {
-        deleted: false,
-        errors: [{ field: "id", message: `No cuteDev with id ${id}` }],
-      };
-    }
+  async deleteCuteDev(@Ctx() { req }: MyContext): Promise<DeleteResponse> {
+    const { cutedev, error } = await AuthUser(req);
+    if (error) return { deleted: false, error };
+
     try {
-      await CuteDev.remove([cuteDevToDelete]);
-      return { deleted: true };
+      if (cutedev) {
+        await CuteDev.remove([cutedev]);
+        return { deleted: true };
+      }
+      return { deleted: false };
     } catch (e) {
       console.error(e);
       return {
         deleted: false,
-        errors: [
-          {
-            field: "id",
-            message: `Unexpected error at deleting cuteDev with id ${id}`,
-          },
-        ],
+        error: new OperationError(
+          "delete cutedev",
+          "Error at deleting cutedev",
+        ),
       };
     }
   }

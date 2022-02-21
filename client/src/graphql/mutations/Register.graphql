@@ -1,0 +1,9 @@
+mutation Register($username: String!, $password: String!) {
+  registerCuteDev(username: $username, password: $password) {
+    accessToken
+    error {
+      type
+      details
+    }
+  }
+}
